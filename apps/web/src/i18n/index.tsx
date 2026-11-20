@@ -139,7 +139,7 @@ function readDesktopHostOsLocale(): string | undefined {
 // Exported so tests can pin the priority chain without spinning up the
 // full I18nProvider.
 export function detectInitialLocale(): Locale {
-  if (typeof window === 'undefined') return 'en';
+  if (typeof window === 'undefined') return 'vi';
   let storedLocale: string | null = null;
   let storedSource: string | null = null;
   try {
@@ -155,15 +155,7 @@ export function detectInitialLocale(): Locale {
   ) {
     return storedLocale as Locale;
   }
-  const hostOsLocale = readDesktopHostOsLocale();
-  if (hostOsLocale) {
-    const fromHost = resolveSystemLocale([hostOsLocale]);
-    if (fromHost) return fromHost;
-  }
-  const detected = resolveSystemLocale(
-    navigator.languages?.length ? navigator.languages : [navigator.language],
-  );
-  return detected ?? 'en';
+  return 'vi';
 }
 
 interface I18nContextValue {
@@ -182,10 +174,10 @@ const I18nContext = createContext<I18nContextValue | null>(null);
 // such effect into an infinite render loop that spins instead of failing —
 // which reads as a hung test suite rather than a bug.
 const FALLBACK_I18N: I18nContextValue = {
-  locale: 'en',
+  locale: 'vi',
   setLocale: () => { },
   t: (key, vars) => {
-    const raw = en[key] ?? key;
+    const raw = vi[key] ?? en[key] ?? key;
     if (!vars) return raw;
     return raw.replace(/\{(\w+)\}/g, (_, n: string) => {
       const v = vars[n];

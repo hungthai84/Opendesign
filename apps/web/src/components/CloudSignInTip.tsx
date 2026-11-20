@@ -116,6 +116,10 @@ export function CloudSignInTip({ sharePrompt = false, className, onLoginSuccess,
     return () => media.removeEventListener('change', update);
   }, []);
 
+  if (!sharePrompt) {
+    return null;
+  }
+
 
   // The "sign-in page didn't open?" line is a fallback: it waits a few
   // seconds into the attempt (the browser usually opens on its own), unless

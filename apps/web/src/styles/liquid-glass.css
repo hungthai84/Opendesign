@@ -1,0 +1,822 @@
+/* ============================================================
+   LIQUID GLASS UI DESIGN SYSTEM
+   Modern optical liquid glass materials, layered hierarchy,
+   and dynamic lighting for OpenDesign.
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap');
+
+/* --- 1. DESIGN TOKENS (LIGHT & DARK) ----------------------- */
+:root {
+  /* Play Typography */
+  --font-play: 'Play', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --sans: var(--font-play);
+  --serif: var(--font-play);
+
+  /* Light Mode Liquid Glass Tokens */
+  --lg-bg: #EEF4FC;
+  --lg-bg-secondary: #DDEBFA;
+  --lg-solid-surface: #FFFFFF;
+  --lg-secondary-surface: #F5F8FD;
+  --lg-surface: rgba(255, 255, 255, 0.56);
+  --lg-surface-strong: rgba(245, 249, 255, 0.76);
+  --lg-primary: #2878E8;
+  --lg-secondary: #7E8FE8;
+  --lg-cyan: #64CFE0;
+  --lg-violet: #9A8BE8;
+  --lg-text: #24334D;
+  --lg-secondary-text: #536782;
+  --lg-muted: #71839C;
+  --lg-border: rgba(255, 255, 255, 0.82);
+  --lg-edge-highlight: rgba(255, 255, 255, 0.96);
+  --lg-shadow: rgba(48, 77, 128, 0.18);
+  --lg-specular: rgba(255, 255, 255, 0.82);
+
+  /* Semantic Tokens (Light) */
+  --lg-success: #168A72;
+  --lg-warning: #A66A18;
+  --lg-error: #C64655;
+  --lg-info: #2878E8;
+
+  /* Global system token mappings for Light Mode */
+  --bg-app: var(--lg-bg);
+  --bg: var(--lg-bg);
+  --bg-panel: var(--lg-solid-surface);
+  --bg-elevated: var(--lg-solid-surface);
+  --bg-subtle: var(--lg-secondary-surface);
+  --bg-muted: var(--lg-bg-secondary);
+  --bg-fill: rgba(40, 120, 232, 0.08);
+  --bg-fill-secondary: rgba(40, 120, 232, 0.05);
+  --bg-fill-tertiary: rgba(40, 120, 232, 0.03);
+
+  --text: var(--lg-text);
+  --text-strong: #17243A;
+  --text-muted: var(--lg-muted);
+  --text-soft: var(--lg-secondary-text);
+  --text-faint: var(--lg-muted);
+
+  --accent: var(--lg-primary);
+  --accent-contrast: #FFFFFF;
+  --accent-strong: #1B5DBB;
+  --accent-soft: rgba(40, 120, 232, 0.12);
+  --accent-tint: rgba(40, 120, 232, 0.06);
+  --accent-hover: #1E6AD6;
+
+  --border: rgba(48, 77, 128, 0.14);
+  --border-strong: rgba(48, 77, 128, 0.28);
+  --border-soft: rgba(48, 77, 128, 0.08);
+  --border-selected: var(--lg-primary);
+
+  --glass-regular: var(--lg-surface);
+  --glass-regular-blur: 24px;
+  --glass-edge-highlight: var(--lg-edge-highlight);
+  --glass-backdrop: blur(24px) saturate(1.8);
+
+  --green: var(--lg-success);
+  --amber: var(--lg-warning);
+  --red: var(--lg-error);
+  --blue: var(--lg-info);
+
+  /* Optical Liquid Glass Ambient Wash */
+  --app-wash: radial-gradient(at 8% 12%, rgba(100, 207, 224, 0.22) 0px, transparent 48%),
+              radial-gradient(at 88% 16%, rgba(154, 139, 232, 0.20) 0px, transparent 52%),
+              radial-gradient(at 52% 84%, rgba(40, 120, 232, 0.14) 0px, transparent 58%),
+              radial-gradient(at 85% 82%, rgba(221, 235, 250, 0.85) 0px, transparent 45%),
+              #EEF4FC;
+}
+
+/* Dark Mode Liquid Glass Tokens */
+[data-theme="dark"] {
+  --lg-bg: #101827;
+  --lg-bg-secondary: #17243A;
+  --lg-solid-surface: #202D43;
+  --lg-secondary-surface: #26364F;
+  --lg-surface: rgba(47, 67, 98, 0.54);
+  --lg-surface-strong: rgba(52, 73, 108, 0.78);
+  --lg-primary: #78B8FF;
+  --lg-secondary: #A7A0FF;
+  --lg-cyan: #72DDE6;
+  --lg-violet: #B8A5FF;
+  --lg-text: #F1F6FF;
+  --lg-secondary-text: #C5D2E7;
+  --lg-muted: #9BAEC9;
+  --lg-border: rgba(223, 237, 255, 0.24);
+  --lg-edge-highlight: rgba(239, 247, 255, 0.46);
+  --lg-shadow: rgba(0, 0, 0, 0.38);
+  --lg-specular: rgba(255, 255, 255, 0.66);
+
+  /* Semantic Tokens (Dark) */
+  --lg-success: #5AD6B5;
+  --lg-warning: #F4C16C;
+  --lg-error: #FF8793;
+  --lg-info: #78B8FF;
+
+  /* Global system token mappings for Dark Mode */
+  --bg-app: var(--lg-bg);
+  --bg: var(--lg-bg);
+  --bg-panel: var(--lg-solid-surface);
+  --bg-elevated: var(--lg-solid-surface);
+  --bg-subtle: var(--lg-secondary-surface);
+  --bg-muted: var(--lg-bg-secondary);
+  --bg-fill: rgba(120, 184, 255, 0.12);
+  --bg-fill-secondary: rgba(120, 184, 255, 0.08);
+  --bg-fill-tertiary: rgba(120, 184, 255, 0.04);
+
+  --text: var(--lg-text);
+  --text-strong: #FFFFFF;
+  --text-muted: var(--lg-muted);
+  --text-soft: var(--lg-secondary-text);
+  --text-faint: var(--lg-muted);
+
+  --accent: var(--lg-primary);
+  --accent-contrast: #101827;
+  --accent-strong: #99C8FF;
+  --accent-soft: rgba(120, 184, 255, 0.16);
+  --accent-tint: rgba(120, 184, 255, 0.08);
+  --accent-hover: #61A8FF;
+
+  --border: rgba(223, 237, 255, 0.16);
+  --border-strong: rgba(223, 237, 255, 0.32);
+  --border-soft: rgba(223, 237, 255, 0.10);
+  --border-selected: var(--lg-primary);
+
+  --glass-regular: var(--lg-surface);
+  --glass-edge-highlight: var(--lg-edge-highlight);
+  --glass-backdrop: blur(24px) saturate(1.8);
+
+  --green: var(--lg-success);
+  --amber: var(--lg-warning);
+  --red: var(--lg-error);
+  --blue: var(--lg-info);
+
+  /* Optical Liquid Glass Ambient Wash (Dark) */
+  --app-wash: radial-gradient(at 8% 12%, rgba(114, 221, 230, 0.14) 0px, transparent 48%),
+              radial-gradient(at 88% 16%, rgba(184, 165, 255, 0.14) 0px, transparent 52%),
+              radial-gradient(at 52% 84%, rgba(120, 184, 255, 0.10) 0px, transparent 58%),
+              radial-gradient(at 85% 82%, rgba(23, 36, 58, 0.95) 0px, transparent 45%),
+              #101827;
+}
+
+/* System dark fallback when unconfigured */
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]):not([data-theme="dark"]) {
+    --lg-bg: #101827;
+    --lg-bg-secondary: #17243A;
+    --lg-solid-surface: #202D43;
+    --lg-secondary-surface: #26364F;
+    --lg-surface: rgba(47, 67, 98, 0.54);
+    --lg-surface-strong: rgba(52, 73, 108, 0.78);
+    --lg-primary: #78B8FF;
+    --lg-secondary: #A7A0FF;
+    --lg-cyan: #72DDE6;
+    --lg-violet: #B8A5FF;
+    --lg-text: #F1F6FF;
+    --lg-secondary-text: #C5D2E7;
+    --lg-muted: #9BAEC9;
+    --lg-border: rgba(223, 237, 255, 0.24);
+    --lg-edge-highlight: rgba(239, 247, 255, 0.46);
+    --lg-shadow: rgba(0, 0, 0, 0.38);
+    --lg-specular: rgba(255, 255, 255, 0.66);
+    --bg-app: var(--lg-bg);
+    --bg: var(--lg-bg);
+    --bg-panel: var(--lg-solid-surface);
+    --text: var(--lg-text);
+    --text-strong: #FFFFFF;
+    --accent: var(--lg-primary);
+  }
+}
+
+/* --- 2. GLOBAL TYPOGRAPHY ENFORCEMENT: ALL FONTS TO PLAY --- */
+*,
+*::before,
+*::after,
+html,
+body,
+button,
+input,
+textarea,
+select,
+h1, h2, h3, h4, h5, h6,
+p, span, a, label, kbd, code, pre,
+.entry,
+.entry-main,
+.entry-nav-rail,
+.chat-pane,
+.chat-column,
+.viewer,
+.file-workspace,
+.od-dialog,
+.settings-dialog,
+.design-card,
+.recent-project-card,
+.template-card {
+  font-family: 'Play', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+}
+
+/* --- 3. AMBIENT WASH & CANVAS GROUND ------------------------ */
+body {
+  background-color: var(--lg-bg) !important;
+  color: var(--lg-text) !important;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--app-wash) !important;
+  transition: background 0.4s ease;
+}
+
+/* --- 4. LAYER 1: FLOATING LIQUID GLASS CONTROLS ------------- */
+
+/* Left Navigation Rail (100% transparent as requested) */
+.entry-nav-rail,
+.entry-nav-rail__panel {
+  background: transparent !important;
+  background-color: transparent !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Active Navigation Buttons */
+.entry-nav-rail__btn {
+  border-radius: 14px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.entry-nav-rail__btn:hover:not(:disabled) {
+  background: var(--lg-surface-strong) !important;
+  box-shadow: 0 4px 12px var(--lg-shadow), inset 0 1px 0.5px var(--lg-edge-highlight) !important;
+  transform: translateY(-1px);
+}
+
+.entry-nav-rail__btn.is-active {
+  background: var(--lg-surface-strong) !important;
+  border: 1px solid var(--lg-border) !important;
+  box-shadow: 0 6px 16px var(--lg-shadow), inset 0 1.5px 1px var(--lg-edge-highlight) !important;
+}
+
+/* Top Navigation Chrome / Tabs Bar */
+.workspace-tabs-chrome,
+.workspace-tabs-bar {
+  background: var(--lg-surface) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.7) !important;
+  backdrop-filter: blur(20px) saturate(1.7) !important;
+  border-bottom: 1px solid var(--lg-border) !important;
+  box-shadow: 0 4px 20px 0 var(--lg-shadow), inset 0 -0.5px 0.5px var(--lg-edge-highlight) !important;
+}
+
+.workspace-tab {
+  border-radius: 12px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.workspace-tab.is-active {
+  background: var(--lg-solid-surface) !important;
+  border: 1px solid var(--lg-border) !important;
+  box-shadow: 0 4px 12px var(--lg-shadow), inset 0 1px 0.5px var(--lg-edge-highlight) !important;
+}
+
+/* Top-Right Cluster Floating Actions */
+.entry-top-right-cluster {
+  background: var(--lg-surface) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.8) !important;
+  backdrop-filter: blur(20px) saturate(1.8) !important;
+  border: 1px solid var(--lg-border) !important;
+  border-radius: 999px !important;
+  padding: 4px 10px !important;
+  box-shadow: 0 6px 20px var(--lg-shadow), inset 0 1px 1px var(--lg-edge-highlight) !important;
+}
+
+/* Segmented Controls, Pills, and Filter Bars */
+.home-hero__type-pills,
+.home-hero__type-pill,
+.inline-model-switcher,
+.filter-pill,
+.design-card-tag {
+  border-radius: 999px !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.home-hero__type-pill {
+  background: var(--lg-surface) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.6) !important;
+  backdrop-filter: blur(16px) saturate(1.6) !important;
+  border: 1px solid var(--lg-border) !important;
+  color: var(--lg-text) !important;
+}
+
+.home-hero__type-pill:hover {
+  background: var(--lg-surface-strong) !important;
+  box-shadow: 0 4px 16px var(--lg-shadow), inset 0 1px 1px var(--lg-edge-highlight) !important;
+  transform: translateY(-1.5px);
+}
+
+.home-hero__type-pill.is-active {
+  background: linear-gradient(135deg, var(--lg-primary) 0%, var(--lg-secondary) 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(40, 120, 232, 0.35), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* Floating Plus Menu / Toolbars */
+.plus-menu,
+.od-select-menu,
+.mention-popover,
+.updater-popup,
+.entry-nav-rail__team-menu,
+.entry-nav-rail__menu {
+  background: var(--lg-surface-strong) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(1.8) !important;
+  backdrop-filter: blur(28px) saturate(1.8) !important;
+  border: 1px solid var(--lg-border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 48px 0 var(--lg-shadow),
+              inset 0 1.5px 1px 0 var(--lg-edge-highlight) !important;
+  overflow: hidden;
+}
+
+/* Modals & Dialogs */
+.od-dialog,
+.settings-dialog,
+.invite-dialog,
+.experience-survey-dialog {
+  background: var(--lg-surface-strong) !important;
+  -webkit-backdrop-filter: blur(32px) saturate(1.8) !important;
+  backdrop-filter: blur(32px) saturate(1.8) !important;
+  border: 1px solid var(--lg-border) !important;
+  border-radius: 26px !important;
+  box-shadow: 0 24px 64px 0 var(--lg-shadow),
+              inset 0 2px 1.5px 0 var(--lg-edge-highlight) !important;
+}
+
+/* Scrim Backdrop for Overlays */
+.od-scrim,
+.entry-nav-rail__menu-backdrop {
+  background: rgba(24, 38, 64, 0.28) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+}
+
+[data-theme="dark"] .od-scrim,
+[data-theme="dark"] .entry-nav-rail__menu-backdrop {
+  background: rgba(0, 0, 0, 0.55) !important;
+}
+
+/* --- 5. LAYER 2: SOLID CONTENT SURFACES --------------------- */
+/* Keep dense reading content, lists, grids on solid surfaces for 100% WCAG contrast */
+
+.entry-main,
+.entry-main__inner,
+.recent-projects,
+.project-card,
+.template-card,
+.design-card,
+.df-panel,
+.chat-pane {
+  color: var(--lg-text);
+}
+
+/* Project and Template Cards */
+.project-card,
+.template-card,
+.design-card,
+.recent-project-card {
+  background: var(--lg-solid-surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 4px 16px rgba(48, 77, 128, 0.06), 0 1px 3px rgba(48, 77, 128, 0.04) !important;
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.24s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.24s ease !important;
+  position: relative;
+}
+
+[data-theme="dark"] .project-card,
+[data-theme="dark"] .template-card,
+[data-theme="dark"] .design-card,
+[data-theme="dark"] .recent-project-card {
+  background: var(--lg-solid-surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.project-card:hover,
+.template-card:hover,
+.design-card:hover,
+.recent-project-card:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--lg-primary) !important;
+  box-shadow: 0 14px 32px var(--lg-shadow),
+              0 0 0 1px var(--lg-primary) !important;
+}
+
+/* Hero Composer Shell */
+.home-hero__composer-shell,
+.composer-shell {
+  background: var(--lg-solid-surface) !important;
+  border: 1px solid var(--border-strong) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 12px 36px var(--lg-shadow),
+              inset 0 1px 1px var(--lg-edge-highlight) !important;
+  transition: all 0.2s ease !important;
+}
+
+.home-hero__composer-shell:focus-within,
+.composer-shell:focus-within {
+  border-color: var(--lg-primary) !important;
+  box-shadow: 0 16px 44px var(--lg-shadow),
+              0 0 0 3px rgba(40, 120, 232, 0.18),
+              inset 0 1px 1px var(--lg-edge-highlight) !important;
+}
+
+/* Form inputs & textareas */
+input[type="text"],
+input[type="search"],
+textarea,
+select {
+  font-family: var(--font-play);
+  background: var(--lg-secondary-surface) !important;
+  color: var(--lg-text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  transition: all 0.2s ease !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--lg-primary) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 3px rgba(40, 120, 232, 0.15) !important;
+}
+
+/* --- 6. BUTTONS & CONTROLS ---------------------------------- */
+
+/* Primary Action Buttons */
+.btn-primary,
+button.primary,
+.entry-nav-rail__new-project-btn,
+.home-hero__send-button {
+  background: linear-gradient(135deg, var(--lg-primary) 0%, color-mix(in srgb, var(--lg-primary) 70%, var(--lg-violet)) 100%) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 4px 16px rgba(40, 120, 232, 0.35),
+              inset 0 1px 1px rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  cursor: pointer;
+}
+
+.btn-primary:hover:not(:disabled),
+button.primary:hover:not(:disabled),
+.entry-nav-rail__new-project-btn:hover:not(:disabled) {
+  transform: translateY(-1.5px) !important;
+  box-shadow: 0 8px 24px rgba(40, 120, 232, 0.45),
+              inset 0 1px 1px rgba(255, 255, 255, 0.9) !important;
+}
+
+.btn-primary:active:not(:disabled),
+button.primary:active:not(:disabled),
+.entry-nav-rail__new-project-btn:active:not(:disabled) {
+  transform: translateY(0.5px) !important;
+  box-shadow: 0 2px 8px rgba(40, 120, 232, 0.3) !important;
+}
+
+/* Secondary / Glass Buttons */
+.btn-secondary,
+.btn-ghost {
+  background: var(--lg-surface) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--lg-border) !important;
+  color: var(--lg-text) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 2px 8px var(--lg-shadow), inset 0 1px 0.5px var(--lg-edge-highlight) !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-secondary:hover:not(:disabled),
+.btn-ghost:hover:not(:disabled) {
+  background: var(--lg-surface-strong) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 14px var(--lg-shadow), inset 0 1px 1px var(--lg-edge-highlight) !important;
+}
+
+/* --- 7. DYNAMIC LIQUID GLASS SPECULAR SHINE & MOTIONS ------- */
+
+@keyframes liquidSpecularSweep {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Subtle continuous specular sheen along top edge of floating panes */
+.entry-nav-rail__panel::before,
+.od-dialog::before,
+.settings-dialog::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, var(--lg-specular) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: liquidSpecularSweep 7s infinite ease-in-out;
+  pointer-events: none;
+  border-radius: 24px 24px 0 0;
+  opacity: 0.85;
+}
+
+/* --- 8. FLOATING THEME TOGGLE (LIGHT / DARK) ---------------- */
+.liquid-glass-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  margin-left: 6px;
+  border-radius: 999px;
+  background: var(--lg-surface);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  backdrop-filter: blur(16px) saturate(1.8);
+  border: 1px solid var(--lg-border);
+  color: var(--lg-text);
+  font-family: var(--font-play);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px var(--lg-shadow), inset 0 1px 0.5px var(--lg-edge-highlight);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.liquid-glass-theme-toggle:hover {
+  background: var(--lg-surface-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px var(--lg-shadow), inset 0 1px 1px var(--lg-edge-highlight);
+  color: var(--lg-primary);
+}
+
+.liquid-glass-theme-toggle:active {
+  transform: translateY(0.5px);
+}
+
+.liquid-glass-theme-toggle svg {
+  flex-shrink: 0;
+}
+
+/* --- 9. ACCESSIBILITY & PERFORMANCE DEGRADATION ------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .entry-nav-rail__panel,
+  .workspace-tabs-chrome,
+  .workspace-tabs-bar,
+  .entry-top-right-cluster,
+  .home-hero__type-pill,
+  .plus-menu,
+  .od-select-menu,
+  .mention-popover,
+  .updater-popup,
+  .entry-nav-rail__team-menu,
+  .entry-nav-rail__menu,
+  .od-dialog,
+  .settings-dialog,
+  .liquid-glass-theme-toggle {
+    background: var(--lg-solid-surface) !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .entry-nav-rail__panel,
+  .workspace-tabs-chrome,
+  .workspace-tabs-bar,
+  .entry-top-right-cluster,
+  .home-hero__type-pill,
+  .plus-menu,
+  .od-select-menu,
+  .mention-popover,
+  .updater-popup,
+  .entry-nav-rail__team-menu,
+  .entry-nav-rail__menu,
+  .od-dialog,
+  .settings-dialog,
+  .liquid-glass-theme-toggle {
+    background: var(--lg-solid-surface) !important;
+  }
+}
+
+/* ============================================================
+   GLASS UI THEME ENHANCEMENTS (LIGHT & DARK MODES)
+   ============================================================ */
+
+/* 1. Remove workspace tabs header completely as requested ("xóa header, nút giao diện sáng xóa") */
+header[aria-label="Workspace tabs"],
+.workspace-tabs-chrome,
+.workspace-tabs-bar,
+#workspace-chrome-account-actions,
+.workspace-chrome-account-actions,
+.workspace-tabs-rail-actions {
+  display: none !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  max-height: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: none !important;
+  overflow: hidden !important;
+}
+
+/* 2. Top-level window viewport: master card fits within 1 page */
+.workspace-shell {
+  width: 100vw !important;
+  height: 100vh !important;
+  max-width: 100vw !important;
+  max-height: 100vh !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: var(--lg-bg) !important;
+}
+
+/* 3. MASTER CARD: "Tạo card chính đưa tất cả nội dung vào thẻ chính bo cong 4 góc 14px ,
+   nội dung bên trong cách thẻ chính 15px ,thẻ cách website 15px , thẻ chính nằm gọn trong 1 trang , nền thẻ dạng Glass" */
+.workspace-shell__body {
+  box-sizing: border-box !important;
+  margin: 15px !important;               /* thẻ cách website 15px */
+  padding: 15px !important;              /* nội dung bên trong cách thẻ chính 15px */
+  width: calc(100vw - 30px) !important;  /* thẻ chính nằm gọn trong 1 trang */
+  height: calc(100vh - 30px) !important; /* thẻ chính nằm gọn trong 1 trang */
+  max-width: calc(100vw - 30px) !important;
+  max-height: calc(100vh - 30px) !important;
+  border-radius: 14px !important;        /* bo cong 4 góc 14px */
+  overflow: hidden !important;
+  position: relative !important;
+  
+  /* Nền thẻ dạng Glass (Light Mode) */
+  background: rgba(255, 255, 255, 0.35) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.8) !important;
+  backdrop-filter: blur(16px) saturate(1.8) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 8px 32px 0 rgba(48, 77, 128, 0.12),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+[data-theme="dark"] .workspace-shell__body {
+  /* Nền thẻ dạng Glass (Dark Mode) */
+  background: rgba(23, 36, 58, 0.48) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.8) !important;
+  backdrop-filter: blur(16px) saturate(1.8) !important;
+  border: 1px solid rgba(223, 237, 255, 0.18) !important;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 4. Inside Master Card: Entry Layout (Home, All Projects, Design Systems) */
+.entry-shell {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  overflow: hidden !important;
+}
+
+.entry {
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  gap: 15px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Left sidebar: 100% transparent, no border/shadow as requested */
+nav[aria-label="Primary"],
+.entry-nav-rail,
+.entry-nav-rail__panel {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.entry-nav-rail__panel::before {
+  display: none !important;
+}
+
+/* Main content surface inside entry */
+main,
+.entry-main {
+  border-radius: 14px !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08) !important;
+  backdrop-filter: blur(8px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(8px) saturate(1.6) !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  overflow-y: auto !important;
+}
+
+[data-theme="dark"] main,
+[data-theme="dark"] .entry-main {
+  background: rgba(32, 45, 67, 0.55) !important;
+  border: 1px solid rgba(223, 237, 255, 0.14) !important;
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 5. Inside Master Card: Project View Layout (.app) */
+.app {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+.app > .split {
+  height: 100% !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  gap: 15px !important;
+}
+
+.chat-column {
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.52) !important;
+  backdrop-filter: blur(10px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+}
+
+[data-theme="dark"] .chat-column {
+  background: rgba(32, 45, 67, 0.55) !important;
+  border: 1px solid rgba(223, 237, 255, 0.14) !important;
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+.viewer,
+.file-workspace {
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(10px) saturate(1.6) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06) !important;
+  overflow: hidden !important;
+}
+
+[data-theme="dark"] .viewer,
+[data-theme="dark"] .file-workspace {
+  background: rgba(26, 38, 58, 0.55) !important;
+  border: 1px solid rgba(223, 237, 255, 0.14) !important;
+  box-shadow: 0 4px 28px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* 6. Remove sign-in tip card completely */
+[data-testid="entry-cloud-signin-tip"],
+.entry-local-mode-tip {
+  display: none !important;
+}
+

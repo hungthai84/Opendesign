@@ -80,6 +80,7 @@ import {
   type ChatSurfaceHandle,
 } from '../observability/chat-health';
 import { useI18n, useT } from '../i18n';
+import { navigate } from '../router';
 import { startersForProduct, type ProductType } from '../onboarding/recommendation';
 import { starterCopyFor } from '../onboarding/starter-copy';
 import type { DesignToolboxActionId } from '../runtime/design-toolbox';
@@ -4226,10 +4227,24 @@ export function ChatPane({
     : undefined;
 
   const historyControl = (
-    <div
-      className={`chat-history-wrap chat-session-switcher${showConvList ? ' open' : ''}`}
-      ref={historyWrapRef}
-    >
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+      <button
+        type="button"
+        className="chat-session-trigger icon-only od-tooltip"
+        data-testid="chat-home-button"
+        data-tooltip="Về trang chủ"
+        data-tooltip-placement="bottom"
+        aria-label="Về trang chủ"
+        onClick={() => {
+          navigate({ kind: 'home', view: 'home' });
+        }}
+      >
+        <Icon name="home" size={16} />
+      </button>
+      <div
+        className={`chat-history-wrap chat-session-switcher${showConvList ? ' open' : ''}`}
+        ref={historyWrapRef}
+      >
       {/*
         * 面板头第一颗图标键。稿子 `729fa43ce7`:
         * `docs/design/chat-panel/src/body-scene.html:7`
@@ -4343,6 +4358,7 @@ export function ChatPane({
           </div>
         </div>
       ) : null}
+    </div>
     </div>
   );
 

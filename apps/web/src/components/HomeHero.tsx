@@ -37,7 +37,6 @@ import type {
 import { DesignSystemPicker } from './DesignSystemPicker';
 import type { SkillSummary } from '../types';
 import { Icon, type IconName } from './Icon';
-import { RemixIcon } from './RemixIcon';
 import {
   FileTypeIcon,
   fileTypePreviewKind,
@@ -534,7 +533,7 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
   const previewHomeFileUrl = previewHomeFileKey ? stagedFilePreviewUrls.get(previewHomeFileKey) ?? null : null;
   const placeholder = activePluginTitle || activeSkillTitle
     ? t('homeHero.placeholderActive')
-    : 'Message M365 Copilot for work';
+    : t('homeHero.placeholder');
   const mentionActive = Boolean(mentionTrigger);
   const mentionQuery = mentionTrigger?.query ?? '';
   // Scenarios the carousel cycles, with copy resolved through `t()` so the
@@ -618,7 +617,6 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
 
   const carouselActive =
     active &&
-    Boolean(activeChipId) &&
     !submitting &&
     !submitDisabled &&
     prompt.trim().length === 0 &&
@@ -1577,35 +1575,32 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
           headlines (a narrow "?") are left alone. */}
       {isDock ? null : (
         <>
-          <div className="copilot-corner-badge" title="Microsoft Copilot">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-              <path d="M12.5 4.5C9.5 4.5 7.5 6.5 7.5 9.5V11H12.5C14.7 11 16.5 12.8 16.5 15C16.5 17.2 14.7 19 12.5 19H7.5C5.3 19 3.5 17.2 3.5 15V9.5C3.5 5.5 6.5 2.5 10.5 2.5H12.5V4.5Z" fill="url(#copilot1)" />
-              <path d="M11.5 19.5C14.5 19.5 16.5 17.5 16.5 14.5V13H11.5C9.3 13 7.5 11.2 7.5 9C7.5 6.8 9.3 5 11.5 5H16.5C18.7 5 20.5 6.8 20.5 9V14.5C20.5 18.5 17.5 21.5 13.5 21.5H11.5V19.5Z" fill="url(#copilot2)" />
-              <defs>
-                <linearGradient id="copilot1" x1="3" y1="2" x2="16" y2="19" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#0078d4" />
-                  <stop offset="50%" stopColor="#00bcf2" />
-                  <stop offset="100%" stopColor="#10b981" />
-                </linearGradient>
-                <linearGradient id="copilot2" x1="7" y1="5" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-                  <stop offset="0%" stopColor="#f59e0b" />
-                  <stop offset="50%" stopColor="#ef4444" />
-                  <stop offset="100%" stopColor="#ec4899" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
           <h1
             className={
-              'home-hero__title copilot-hero-title' +
+              'home-hero__title' +
               (endsWithFullWidthPunctuation(titleTemplate)
                 ? ' home-hero__title--optical-trim'
                 : '')
             }
             aria-label={titleAriaLabel}
           >
-            Hi, how can I help you?
+            {/* A locale opts into the rotating noun by putting `{word}` in its
+                own headline string — en / zh-CN / zh-TW do; the other 16 keep a
+                plain sentence and fall straight through to the `else`. Nothing
+                here knows which locale is which, so any translation can join
+                later by editing one string. */}
+            {titleParts ? (
+              <>
+                {titleParts.lead}
+                <RotatingTitleWord words={titleRotatingWords} pinned={titlePinnedWord} />
+                {titleParts.tail}
+              </>
+            ) : (
+              titleTemplate
+            )}
           </h1>
+          {/* One quiet line under the headline (per product). */}
+          <p className="home-hero__subtitle">{t('homeHero.subtitle')}</p>
         </>
       )}
 
@@ -2563,64 +2558,14 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
           question the pill had just answered. The examples below now show the
           picked type's full set. */}
 
-      {!isDock ? (
-        <div className="copilot-cards-grid">
-          <div
-            className="copilot-card"
-            onClick={() => usePromptExample('What are some trends in remote work and hybrid offices?')}
-          >
-            <div className="copilot-card-head">
-              <span className="copilot-card-icon">💡</span>
-              <span className="copilot-card-title">Idea</span>
-            </div>
-            <div className="copilot-card-prompt">
-              What are some trends in remote work and hybrid offices?
-            </div>
-          </div>
-
-          <div
-            className="copilot-card"
-            onClick={() => usePromptExample('Create an image of what a quantum computer would look like')}
-          >
-            <div className="copilot-card-head">
-              <span className="copilot-card-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                  <path d="M12.5 4.5C9.5 4.5 7.5 6.5 7.5 9.5V11H12.5C14.7 11 16.5 12.8 16.5 15C16.5 17.2 14.7 19 12.5 19H7.5C5.3 19 3.5 17.2 3.5 15V9.5C3.5 5.5 6.5 2.5 10.5 2.5H12.5V4.5Z" fill="url(#copilot-card-1)" />
-                  <path d="M11.5 19.5C14.5 19.5 16.5 17.5 16.5 14.5V13H11.5C9.3 13 7.5 11.2 7.5 9C7.5 6.8 9.3 5 11.5 5H16.5C18.7 5 20.5 6.8 20.5 9V14.5C20.5 18.5 17.5 21.5 13.5 21.5H11.5V19.5Z" fill="url(#copilot-card-2)" />
-                  <defs>
-                    <linearGradient id="copilot-card-1" x1="3" y1="2" x2="16" y2="19" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#0078d4" />
-                      <stop offset="50%" stopColor="#00bcf2" />
-                      <stop offset="100%" stopColor="#10b981" />
-                    </linearGradient>
-                    <linearGradient id="copilot-card-2" x1="7" y1="5" x2="20" y2="21" gradientUnits="userSpaceOnUse">
-                      <stop offset="0%" stopColor="#f59e0b" />
-                      <stop offset="50%" stopColor="#ef4444" />
-                      <stop offset="100%" stopColor="#ec4899" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </span>
-              <span className="copilot-card-title">Design</span>
-            </div>
-            <div className="copilot-card-prompt">
-              Create an image of what a quantum computer would look like
-            </div>
-          </div>
-
-          <div
-            className="copilot-card"
-            onClick={() => usePromptExample('What are some creative ways to announce a new product launch?')}
-          >
-            <div className="copilot-card-head">
-              <span className="copilot-card-icon">✏️</span>
-              <span className="copilot-card-title">Create</span>
-            </div>
-            <div className="copilot-card-prompt">
-              What are some creative ways to announce a new product launch?
-            </div>
-          </div>
-        </div>
+      {!isDock && !activeChipId ? (
+        <TypePillRow
+          chips={templateChips}
+          activeChipId={null}
+          disabled={pluginsLoading || typeSelectionPending || pendingChipId !== null || pendingPluginId !== null}
+          labelFor={(id) => homeHeroChipLabel(id, t)}
+          onPick={handlePickTaskChip}
+        />
       ) : null}
 
       {isDock ? null : recommendationSlot}
@@ -2637,7 +2582,7 @@ export const HomeHero = forwardRef<HomeHeroHandle, Props>(function HomeHero(
           pulseFirstPreset={guidePulseFirstPreset}
           workspaceContext={workspaceContext}
         />
-      ) : activeChipId && activePromptExamples.length > 0 ? (
+      ) : activePromptExamples.length > 0 ? (
         <div
           className="home-hero__prompt-examples"
           data-testid="home-hero-prompt-examples"
@@ -4642,7 +4587,7 @@ function fallbackPluginPresetPrompt(
   return `Create ${englishArticle(artifact)} ${artifact} with the "${title}" preset${description ? `: ${description}` : '.'}`;
 }
 
-const HOME_PROMPT_EXAMPLES: Record<Locale, Record<string, string[]>> = {
+const HOME_PROMPT_EXAMPLES: Partial<Record<Locale, Record<string, string[]>>> & Record<'en', Record<string, string[]>> = {
   "en": {
     "web-clone": [
       "Website URL to clone: https://open-design.ai",
@@ -5387,65 +5332,6 @@ const HOME_PROMPT_EXAMPLES: Record<Locale, Record<string, string[]>> = {
       "Crea un intro bed per podcast di 20 secondi con un'apertura calda, un pulse chiaro e un passaggio pulito verso il voiceover",
       "Realizza un loop ambient continuo per una app di meditazione con texture naturali soffuse, calore sulle basse frequenze e un ritmo calmo",
       "Genera un set di suoni di notifica brandizzati per gli stati di successo, promemoria ed errore mantenendo un'unica identità sonora",
-    ],
-  },
-  vi: {
-    "web-clone": [
-      "URL trang web cần sao chép: https://open-design.ai",
-    ],
-    prototype: [
-      "Thiết kế trang web chuyển đổi cao cho AI CRM với hero rõ ràng, tính năng và CTA dùng thử",
-      "Tạo bảng điều khiển máy tính để bàn cho cơ sở kiến thức nhóm với tìm kiếm và quyền",
-      "Thiết kế lại quy trình onboarding cho sản phẩm SaaS tài chính",
-      "Tạo nguyên mẫu ứng dụng thể dục di động với mục tiêu và theo dõi tiến độ",
-    ],
-    wireframe: [
-      "Vẽ khung dây trang quản trị SaaS với điều hướng, chỉ số chính và bảng dữ liệu",
-      "Phác thảo quy trình thanh toán: giỏ hàng, giao hàng và xác nhận",
-      "Bố cục màn hình quản lý nội dung với danh sách và chi tiết",
-      "Vẽ khung dây hướng dẫn thiết lập tài khoản và không gian làm việc",
-    ],
-    mobile: [
-      "Thiết kế ứng dụng ngân hàng di động với số dư, giao dịch và quản lý thẻ",
-      "Bố cục ứng dụng giao đồ ăn bao gồm duyệt món, giỏ hàng và theo dõi",
-      "Tạo nguyên mẫu ứng dụng theo dõi thói quen với chế độ xem hôm nay và thống kê",
-      "Thiết kế ứng dụng nhắn tin với danh sách trò chuyện và hồ sơ",
-    ],
-    document: [
-      "Soạn sơ yếu lý lịch một trang cho nhà thiết kế sản phẩm cao cấp",
-      "Viết đề xuất dự án hoàn chỉnh với các phần vấn đề, tiếp cận và ngân sách",
-      "Tạo tài liệu tóm tắt sản phẩm một trang bao gồm giới thiệu và giá cả",
-      "Tạo biên bản cuộc họp gọn gàng với nghị sự và các bước tiếp theo",
-    ],
-    deck: [
-      "Nghiên cứu cơ hội thị trường để ra mắt sản phẩm và đối thủ cạnh tranh",
-      "Tạo bài thuyết trình ra mắt tính năng sản phẩm mới",
-      "Tạo bài thuyết trình gọi vốn hạt giống 10 slide cho phần mềm B2B",
-      "Thiết kế bài thuyết trình báo cáo hàng quý cho ban lãnh đạo",
-    ],
-    image: [
-      "Tạo hình ảnh quảng cáo sản phẩm phong cách tối giản, ánh sáng studio",
-      "Tạo hình minh họa 3D phong cách đất sét cho trang chủ công nghệ",
-      "Tạo ảnh chụp chân dung chuyên nghiệp trên nền văn phòng mờ ảo",
-      "Thiết kế banner mạng xã hội hiện đại với bố cục tương phản cao",
-    ],
-    video: [
-      "Tạo video ngắn giới thiệu sản phẩm với chuyển cảnh mượt mà",
-      "Tạo hoạt ảnh logo 3 giây cho phần mở đầu video",
-      "Tạo video hoạt hình mô phỏng luồng người dùng trên ứng dụng",
-      "Tạo video đồ họa chuyển động giải thích tính năng AI",
-    ],
-    hyperframes: [
-      "Tạo đoạn video ngắn ra mắt sản phẩm với phụ đề và CTA cuối cùng",
-      "Tạo trực quan hóa dữ liệu tương tác phản hồi theo nhịp điệu",
-      "Tạo đoạn kết logo 3 giây với đường nét hội tụ và bảng màu thương hiệu",
-      "Tạo bản đồ đường bay động hiển thị các nút thành phố",
-    ],
-    audio: [
-      "Tạo âm thanh khởi động sản phẩm nhẹ nhàng và hiện đại cho ứng dụng máy tính",
-      "Tạo nhạc nền podcast 20 giây với mở đầu ấm áp",
-      "Tạo vòng lặp âm thanh thư giãn liên tục cho ứng dụng thiền",
-      "Tạo bộ âm thanh thông báo thương hiệu cho thành công, nhắc nhở và lỗi",
     ],
   },
 };

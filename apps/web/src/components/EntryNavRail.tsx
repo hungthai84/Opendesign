@@ -1,4 +1,5 @@
 import { ReferralEntry } from './ReferralEntry';
+import { useResolvedTheme } from './ConnectorLogo';
 import { openExternalUrl } from "../providers/registry";
 import { CodingPlanUsage } from './CodingPlanUsage';
 import { WorkspaceQuotaPopover } from './WorkspaceQuotaPopover';
@@ -96,7 +97,6 @@ import type { Project } from '../types';
 import { isRtlLocale, useI18n } from '../i18n';
 import { communityForLocale } from '../lib/community-links';
 import { FeishuIcon } from './chat/support-brand-icons';
-import { GlassThemeToggle } from './GlassThemeToggle';
 import { useDismissOnOutsideInteraction } from '../hooks/useDismissOnOutsideInteraction';
 import {
   beginWorkspaceScopedRead,
@@ -1046,6 +1046,7 @@ export function EntryTopRightCluster({
   priorityAnnouncementMetricsConsent,
 }: EntryTopRightClusterProps) {
   const { t, locale } = useI18n();
+  const liveTheme = useResolvedTheme();
   const analytics = useAnalytics();
   const workspaceDimensions = workspaceAnalyticsDimensions(context);
   const [chromeActionsHost, setChromeActionsHost] = useState<HTMLElement | null>(
@@ -1384,145 +1385,7 @@ export function EntryTopRightCluster({
 
   return (
     <>
-      {createPortal(
-        <div className={clusterVisible ? 'entry-top-right-cluster' : undefined}>
-          {leadingSlot}
-          {/* GitHub star chip: its own option in the cluster, right after the
-              campaign badge (per product) — it used to live in the account
-              menu's social row. */}
-          {clusterVisible ? (
-            <a
-              className="entry-top-right-github"
-              href={REPO_URL}
-              {...externalLinkProps}
-              aria-label={`GitHub · ${githubStars == null ? GITHUB_STARS_FALLBACK_LABEL : formatStars(githubStars)} stars`}
-              title={`GitHub · ${githubStars == null ? GITHUB_STARS_FALLBACK_LABEL : formatStars(githubStars)} stars`}
-              data-testid="entry-top-right-github"
-              onClick={() => trackAccountAction('github')}
-            >
-              {/* 15, not the wordmark's 14: the octocat only fills 81% of its
-                  24-unit viewBox while the plan wordmark fills 90% of its own, so
-                  equal box heights drew an optically smaller mark. 15 puts the
-                  two drawn glyphs on the same ~12.5px height. */}
-              <Icon name="github-filled" size={15} />
-              <span>{githubStars == null ? GITHUB_STARS_FALLBACK_LABEL : formatStars(githubStars)}</span>
-            </a>
-          ) : null}
-          {inviteSlot}
-          {/* The capsule holds the credits segment alone — the avatar moved
-              to the rail, and with it the account menu's hover region. The
-              anchor around it owns the hover region for the billing panel
-              below: the panel is a DOM child, so crossing from the pill into
-              it never leaves the anchor and never arms the close. */}
-          {context && showCreditsPill ? (
-            <div
-              ref={creditsAnchorRef}
-              className="entry-top-right-credits-anchor"
-              onPointerEnter={openCreditsPanel}
-              onPointerLeave={scheduleCreditsPanelClose}
-              onFocus={openCreditsPanel}
-              onBlur={(event) => {
-                if (!event.currentTarget.contains(event.relatedTarget)) scheduleCreditsPanelClose();
-              }}
-            >
-              <div
-                className={`entry-top-right-account-pill${showUpgradePill ? ' entry-top-right-account-pill--upgrade' : ''}${quotaView.sharedBilling ? ` ${styles.sharedQuotaPill}` : ''}`}
-              >
-                <button
-                  type="button"
-                  className="entry-top-right-credits"
-                  data-testid="entry-top-right-credits"
-                  aria-haspopup="dialog"
-                  aria-busy={!quotaView.planKnown || undefined}
-                  aria-expanded={creditsPanelOpen}
-                  aria-controls={creditsPanelOpen ? creditsPanelId : undefined}
-                  aria-label={showUpgradePill ? t('entry.creditsUpgrade') : t('entry.credits')}
-                  onClick={() => {
-                    // Clicking, hovering or focusing opens the quota panel.
-                    trackAccountAction('credits');
-                    openCreditsPanel();
-                  }}
-                >
-                  {!quotaView.planKnown ? (
-                    <span className={styles.planLoading} aria-label={t('common.loading')} />
-                  ) : showUpgradePill ? (
-                    /* Owner's Free plan: the pill stops reporting a balance that is only
-                       ever 0.00 and sells the upgrade instead — spark mark plus
-                       the same 升级 / Upgrade label the billing card uses, on
-                       the green ground the wrapper paints. */
-                    <>
-                      <UpgradeSparkMark />
-                      {t('entry.creditsUpgrade')}
-                    </>
-                  ) : (
-                    <>
-                      {/* Leads with the workspace's plan wordmark (plus / pro /
-                          max / team) rather than a generic charge glyph, so the
-                          chip names the membership it belongs to. The battery
-                          icon stays as the fallback for the rare tier string no
-                          wordmark matches — without it the chip would be a
-                          bare, unlabelled number. */}
-                      {/* The mark alone, at the design's 16px. The balance
-                          moved off the capsule entirely (design + its
-                          electron-panel.png): the number lives in the card the
-                          capsule opens. The battery glyph stays as the
-                          fallback for a tier string no wordmark matches —
-                          without it the capsule would be empty. */}
-                      {planTier ? (
-                        <PlanWordmark tier={planTier} height={16} variant={quotaView.sharedBilling ? 'seats-phase1' : undefined} />
-                      ) : (
-                        <RemixIcon name="battery-charge-line" size={16} />
-                      )}
-                    </>
-                  )}
-                </button>
-              </div>
-              {/* #5517 billing card, relocated: plan (+badge) + 升级 CTA + USD
-                  balance, hanging under the pill it describes. The balance row
-                  links out to B's console. It receives only an explicitly
-                  scoped money value; raw credits are never formatted as
-                  dollars here. */}
-              {creditsPanelOpen ? (
-                <div
-                  id={creditsPanelId}
-                  role="dialog"
-                  aria-label={t('entry.credits')}
-                  className={`entry-top-right-credits-panel ${planCardStyles.panel}`}
-                  data-testid="entry-top-right-credits-panel"
-                >
-                  <WorkspaceQuotaPopover
-                    view={quotaView}
-                    context={context}
-                    profile={workspaceQuotaStatus?.profile ?? priorityAnnouncementAmrProfile}
-                    consoleOrigin={workspaceQuotaStatus?.consoleOrigin}
-                    badgeTier={planTier}
-                    planLabel={tierLabel}
-                    onNavigate={(action) => {
-                      trackAccountAction(action);
-                      setCreditsPanelOpen(false);
-                    }}
-                  />
-                </div>
-              ) : null}
-            </div>
-          ) : null}
-          {/* Update-ready rocket, top-right home: signed-out shells, the
-              project route, and a narrow window whose rail is auto-collapsed
-              keep it here. Otherwise it rides the account row — see the dock
-              below. The slot stays mounted so `:empty { display: none }` can
-              remove it until an installer has downloaded. */}
-          {updaterInRail ? null : (
-            <div
-              ref={updaterSlotHostRef}
-              className={updaterHostVisible ? 'entry-nav-rail__account-updater' : undefined}
-              data-testid={updaterHostVisible ? 'entry-nav-account-updater' : undefined}
-            >
-              {updaterSlot}
-            </div>
-          )}
-        </div>,
-        chromeActionsHost,
-      )}
+      {/* Top chrome actions removed per user request */}
       {/* The account module renders into the rail's foot, not the top-right
           corner — see `accountHost`. Discord / X / mail sit ABOVE the identity
           row rather than inside the menu: they are outbound links to the
@@ -1531,6 +1394,32 @@ export function EntryTopRightCluster({
       {accountInRail
         ? createPortal(
             <div className="entry-nav-rail__account-dock">
+              <div className="entry-nav-rail__sidebar-quick-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
+                <a
+                  className="entry-top-right-github"
+                  href={REPO_URL}
+                  {...externalLinkProps}
+                  aria-label={`GitHub · ${githubStars != null ? formatStars(githubStars) : GITHUB_STARS_FALLBACK_LABEL} stars`}
+                  title={`GitHub · ${githubStars != null ? formatStars(githubStars) : GITHUB_STARS_FALLBACK_LABEL} stars`}
+                  data-testid="entry-top-right-github"
+                  style={{ flex: 1, justifyContent: 'center', height: '32px', borderRadius: '10px' }}
+                  onClick={() => trackAccountAction('github')}
+                >
+                  <Icon name="github-filled" size={15} />
+                  <span>{githubStars != null ? formatStars(githubStars) : GITHUB_STARS_FALLBACK_LABEL}</span>
+                </a>
+                <button
+                  type="button"
+                  className="entry-top-right-github"
+                  onClick={() => {
+                    if (onOpenSettings) onOpenSettings();
+                  }}
+                  style={{ flex: 1, justifyContent: 'center', height: '32px', borderRadius: '10px', cursor: 'pointer' }}
+                >
+                  <Icon name="users" size={15} />
+                  <span>Mời</span>
+                </button>
+              </div>
               <RailSocialRow page={page} dimensions={workspaceDimensions} />
               <div
                 ref={accountContainerRef}
@@ -1900,15 +1789,53 @@ function XMark({ size }: { size: number }) {
  * still explains itself without a label beside it.
  */
 function RailSocialRow({
-  page: _page,
-  dimensions: _dimensions,
+  page,
+  dimensions,
 }: {
   page: TrackingWorkspacePage;
   dimensions: ReturnType<typeof workspaceAnalyticsDimensions>;
 }) {
+  const liveTheme = useResolvedTheme();
+  const [themeState, setThemeState] = useState<'light' | 'dark'>(() => {
+    if (typeof document === 'undefined') return 'light';
+    return (document.documentElement.getAttribute('data-theme') as 'light' | 'dark') || 'light';
+  });
+
+  const toggleTheme = () => {
+    const next = themeState === 'dark' ? 'light' : 'dark';
+    setThemeState(next);
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('open-design:theme', next);
+    } catch {}
+  };
+
   return (
-    <div className="entry-nav-rail__menu-social" data-testid="entry-nav-rail-social">
-      <GlassThemeToggle />
+    <div className="entry-nav-rail__menu-social" data-testid="entry-nav-rail-social" style={{ display: 'flex', width: '100%', padding: '4px 0' }}>
+      <button
+        type="button"
+        className="liquid-glass-theme-toggle"
+        onClick={toggleTheme}
+        aria-label="Chuyển chế độ Giao diện Kính Lỏng (Sáng / Tối)"
+        title={themeState === 'dark' ? 'Chuyển sang Chế độ Sáng' : 'Chuyển sang Chế độ Tối'}
+        style={{
+          width: '100%',
+          justifyContent: 'center',
+          height: '34px',
+          borderRadius: '12px',
+          gap: '8px',
+          fontSize: '13px',
+          fontWeight: 600,
+          margin: 0,
+        }}
+      >
+        {themeState === 'dark' ? (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        ) : (
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        )}
+        <span>{themeState === 'dark' ? 'Chế độ Tối' : 'Chế độ Sáng'}</span>
+      </button>
     </div>
   );
 }
@@ -2226,114 +2153,72 @@ export function EntryNavRail({
       aria-hidden={open ? undefined : true}
     >
       <div className="entry-nav-rail__panel">
-        {/* Aetheris Top Header */}
-        <div className="aetheris-sidebar-top">
-          <div className="aetheris-brand-row">
-            <div className="aetheris-brand-logo-icon" />
-            <span className="aetheris-brand-name">Aetheris</span>
-          </div>
+      <div className="entry-nav-rail__group">
+        <div
+          className="entry-nav-rail__top-tools"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '4px 6px 12px 6px',
+          }}
+        >
           <button
             type="button"
-            className="aetheris-new-chat-btn"
-            onClick={onNewProject}
-            title="New chat"
+            className="entry-nav-rail__icon-btn"
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '34px',
+              borderRadius: '10px',
+              background: 'var(--lg-surface, rgba(255, 255, 255, 0.45))',
+              border: '1px solid var(--lg-border, rgba(255, 255, 255, 0.6))',
+              color: 'var(--lg-text, #24334D)',
+              cursor: 'pointer',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('open-design:entry-rail:toggle'));
+            }}
+            title="Thu gọn sidebar (Ctrl+B)"
+            aria-label="Thu gọn sidebar"
           >
-            <RemixIcon name="chat-new-line" size={15} />
-            <span>New chat</span>
+            <Icon name="layout-left" size={16} />
+            <span>Thu gọn</span>
+          </button>
+          <button
+            type="button"
+            className="entry-nav-rail__icon-btn"
+            style={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '34px',
+              borderRadius: '10px',
+              background: 'var(--lg-surface, rgba(255, 255, 255, 0.45))',
+              border: '1px solid var(--lg-border, rgba(255, 255, 255, 0.6))',
+              color: 'var(--lg-text, #24334D)',
+              cursor: 'pointer',
+              gap: '6px',
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+            onClick={() => {
+              if (onOpenSearch) onOpenSearch();
+              else window.dispatchEvent(new CustomEvent('open-design:entry-search:open'));
+            }}
+            title="Tìm kiếm (Ctrl+K)"
+            aria-label="Tìm kiếm"
+          >
+            <Icon name="search" size={16} />
+            <span>Tìm kiếm</span>
           </button>
         </div>
-
-        {/* Aetheris Nav Links */}
-        <div className="aetheris-nav-links">
-          <button
-            type="button"
-            className="aetheris-nav-item"
-            onClick={() => (onOpenSearch ? onOpenSearch() : undefined)}
-          >
-            <RemixIcon name="search-line" size={16} />
-            <span>Search chat</span>
-          </button>
-          <button
-            type="button"
-            className={`aetheris-nav-item${view === 'community' ? ' is-active' : ''}`}
-            onClick={() => selectView('community')}
-          >
-            <RemixIcon name="book-read-line" size={16} />
-            <span>Library</span>
-          </button>
-          <button
-            type="button"
-            className="aetheris-nav-item"
-            onClick={() => selectView('plugins')}
-          >
-            <RemixIcon name="image-line" size={16} />
-            <span>AI images</span>
-          </button>
-          <button
-            type="button"
-            className="aetheris-nav-item"
-            onClick={() => selectView('plugins')}
-          >
-            <RemixIcon name="video-line" size={16} />
-            <span>AI videos</span>
-          </button>
-          <button
-            type="button"
-            className="aetheris-nav-item"
-            onClick={() => selectView('drafts')}
-          >
-            <RemixIcon name="code-s-slash-line" size={16} />
-            <span>AI code</span>
-          </button>
-        </div>
-
-        {/* Aetheris Folders Section */}
-        <div className="aetheris-folders-section">
-          <div className="aetheris-folders-head">
-            <span>Folders</span>
-            <button
-              type="button"
-              className="aetheris-folders-add-btn"
-              onClick={onNewProject}
-              title="Add folder"
-            >
-              ＋
-            </button>
-          </div>
-          <div className="aetheris-folder-group">
-            <div className="aetheris-folder-title">
-              <RemixIcon name="folder-line" size={15} />
-              <span>Branding</span>
-            </div>
-            <div className="aetheris-folder-items">
-              <div className="aetheris-sub-item">Professional branding</div>
-              <div className="aetheris-sub-item">Branding guide example</div>
-              <div className="aetheris-sub-item">Brand activation ideas</div>
-            </div>
-          </div>
-          <div className="aetheris-folder-group">
-            <div className="aetheris-folder-title">
-              <RemixIcon name="folder-line" size={15} />
-              <span>Web Development</span>
-            </div>
-            <div className="aetheris-folder-items">
-              <div className="aetheris-sub-item">Framer code override</div>
-              <div className="aetheris-sub-item">How to implement this code</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Aetheris Profile Card */}
-        <div className="aetheris-profile-card">
-          <div className="aetheris-profile-avatar">S</div>
-          <div className="aetheris-profile-info">
-            <div className="aetheris-profile-name">Sophia</div>
-            <div className="aetheris-profile-plan">Pro Plan</div>
-          </div>
-          <RemixIcon name="arrow-down-s-line" size={16} className="aetheris-profile-chevron" />
-        </div>
-
-        <div className="entry-nav-rail__group" style={{ display: 'none' }}>
 
         {context ? (
           <div className="entry-nav-rail__team-wrap">
@@ -2703,6 +2588,27 @@ export function EntryNavRail({
             className="entry-nav-rail__account-dock entry-nav-rail__account-dock--local"
             data-testid="entry-nav-local-account-dock"
           >
+            <div className="entry-nav-rail__sidebar-quick-actions" style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', width: '100%' }}>
+              <a
+                className="entry-top-right-github"
+                href={REPO_URL}
+                {...externalLinkProps}
+                aria-label="GitHub stars"
+                style={{ flex: 1, justifyContent: 'center', height: '32px', borderRadius: '10px' }}
+              >
+                <Icon name="github-filled" size={15} />
+                <span>108.6K</span>
+              </a>
+              <button
+                type="button"
+                className="entry-top-right-github"
+                onClick={() => onViewChange('members')}
+                style={{ flex: 1, justifyContent: 'center', height: '32px', borderRadius: '10px', cursor: 'pointer' }}
+              >
+                <Icon name="users" size={15} />
+                <span>Mời</span>
+              </button>
+            </div>
             <RailSocialRow page={analyticsPage} dimensions={workspaceDimensions} />
           </div>
         </div>

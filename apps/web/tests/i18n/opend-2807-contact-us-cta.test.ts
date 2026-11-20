@@ -75,7 +75,7 @@ const OLD_CONTACT_SUPPORT: Record<Locale, string> = {
   vi: 'Liên hệ hỗ trợ',
 };
 
-describe('OPEND-2807 · 〔联系我们〕20 语齐', () => {
+describe('OPEND-2807 · 〔联系我们〕19 语齐', () => {
   it('清点:确实是 20 本词典', () => {
     expect(LOCALES.length).toBe(20);
     expect(Object.keys(CONTACT_US).length).toBe(20);

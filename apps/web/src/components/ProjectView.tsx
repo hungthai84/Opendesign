@@ -14737,19 +14737,6 @@ export function ProjectView({
               data-testid="workspace-tabs-dock"
               ref={chatTabsDockRef}
             >
-              <button
-                type="button"
-                className="split-chat-back-btn od-tooltip"
-                onClick={() => navigate({ kind: 'home', view: 'home' })}
-                title="Quay về trang chủ"
-                aria-label="Quay về trang chủ"
-                data-tooltip="Quay về trang chủ"
-                data-tooltip-placement="bottom"
-                data-testid="project-back-to-home"
-                style={{ order: -1 }}
-              >
-                <Icon name="arrow-left" size={16} />
-              </button>
               {/* Conversation controls follow the docked project dropdown:
                   dropdown → history dock (order 1) → collapse (order 2). The
                   dropdown portals in after these, so CSS `order` fixes the

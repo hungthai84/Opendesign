@@ -23,11 +23,10 @@ export const ENTRY_SEARCH_OPEN_EVENT = 'od:entry-search-open';
 export const ENTRY_RAIL_STATE_EVENT = 'od:entry-rail-state';
 
 export function readStoredRailOpen(): boolean {
-  if (typeof window === 'undefined') return true;
+  if (typeof window === 'undefined') return false;
   try {
-    const val = window.localStorage.getItem(RAIL_OPEN_STORAGE_KEY);
-    return val === null ? true : val === 'true';
+    return window.localStorage.getItem(RAIL_OPEN_STORAGE_KEY) === 'true';
   } catch {
-    return true;
+    return false;
   }
 }

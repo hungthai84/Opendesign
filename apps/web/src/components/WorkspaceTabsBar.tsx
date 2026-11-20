@@ -2433,10 +2433,12 @@ export function WorkspaceTabsBar({
     );
   })();
 
+  // User feedback: remove top chrome header completely ("xóa đối tượng này", "xóa header, nút giao diện sáng xóa")
   return (
     <header
       className={`app-chrome-header workspace-tabs-chrome${tabsDockEl ? ' is-docked' : ''}`}
       aria-label="Workspace tabs"
+      style={{ display: 'none' }}
     >
       <div className="app-chrome-traffic-space workspace-tabs-traffic" aria-hidden />
       {/* Docked mode: the chrome row keeps the brand-logo button plus the

@@ -1,5 +1,4 @@
 import type { SVGProps } from 'react';
-import * as Lucide from 'lucide-react';
 
 import { REMIX_ICON_PATHS } from './remix-icon-paths';
 
@@ -268,160 +267,14 @@ const REMIX_ICON: Partial<Record<IconName, string>> = {
   'zoom-out': 'zoom-out-line',
 };
 
-const LUCIDE_MAP: Partial<Record<IconName, React.ComponentType<any>>> = {
-  'alert-triangle': Lucide.AlertTriangle,
-  'arrow-left': Lucide.ArrowLeft,
-  'arrow-right': Lucide.ArrowRight,
-  'arrow-up': Lucide.ArrowUp,
-  'arrow-up-fill': Lucide.ArrowUp,
-  artboard: Lucide.Layout,
-  attach: Lucide.Paperclip,
-  'bar-chart-box': Lucide.BarChart2,
-  bell: Lucide.Bell,
-  blocks: Lucide.Boxes,
-  brain: Lucide.Brain,
-  check: Lucide.Check,
-  'chevron-down': Lucide.ChevronDown,
-  'chevron-up': Lucide.ChevronUp,
-  'chevron-left': Lucide.ChevronLeft,
-  'chevron-right': Lucide.ChevronRight,
-  close: Lucide.X,
-  comment: Lucide.MessageSquare,
-  copy: Lucide.Copy,
-  crop: Lucide.Crop,
-  dashboard: Lucide.LayoutDashboard,
-  discord: Lucide.MessageCircle,
-  download: Lucide.Download,
-  draw: Lucide.PenTool,
-  edit: Lucide.Edit3,
-  'external-link': Lucide.ExternalLink,
-  eye: Lucide.Eye,
-  'eye-off': Lucide.EyeOff,
-  file: Lucide.File,
-  'file-code': Lucide.FileCode,
-  'file-text': Lucide.FileText,
-  'inbox-archive': Lucide.Archive,
-  'inbox-unarchive': Lucide.ArchiveRestore,
-  folder: Lucide.Folder,
-  'folder-2': Lucide.Folder,
-  'folder-transfer': Lucide.FolderSync,
-  'folder-filled': Lucide.Folder,
-  fork: Lucide.GitFork,
-  'grip-vertical': Lucide.GripVertical,
-  magic: Lucide.Wand2,
-  headset: Lucide.Headphones,
-  'grid-4': Lucide.Grid,
-  grid: Lucide.Grid,
-  globe: Lucide.Globe,
-  hammer: Lucide.Hammer,
-  'help-circle': Lucide.HelpCircle,
-  history: Lucide.History,
-  home: Lucide.Home,
-  'home-filled': Lucide.Home,
-  image: Lucide.Image,
-  import: Lucide.Import,
-  info: Lucide.Info,
-  kanban: Lucide.Columns,
-  key: Lucide.Key,
-  'layers-filled': Lucide.Layers,
-  languages: Lucide.Languages,
-  layout: Lucide.Layout,
-  'layout-grid-2': Lucide.LayoutGrid,
-  lightbulb: Lucide.Lightbulb,
-  link: Lucide.Link,
-  lock: Lucide.Lock,
-  mail: Lucide.Mail,
-  'log-in': Lucide.LogIn,
-  'log-out': Lucide.LogOut,
-  'integrations-filled': Lucide.Workflow,
-  maximize: Lucide.Maximize2,
-  mic: Lucide.Mic,
-  minimize: Lucide.Minimize2,
-  minus: Lucide.Minus,
-  'more-horizontal': Lucide.MoreHorizontal,
-  orbit: Lucide.Orbit,
-  'remix-loop': Lucide.Repeat,
-  'make-same': Lucide.CopyCheck,
-  'paint-bucket': Lucide.PaintBucket,
-  'layout-left': Lucide.PanelLeft,
-  'layout-right': Lucide.PanelRight,
-  'panel-left': Lucide.PanelLeft,
-  nodes: Lucide.Network,
-  palette: Lucide.Palette,
-  'palette-filled': Lucide.Palette,
-  pencil: Lucide.Pencil,
-  plus: Lucide.Plus,
-  'plus-filled': Lucide.PlusCircle,
-  puzzle: Lucide.Puzzle,
-  slides: Lucide.Presentation,
-  star: Lucide.Star,
-  swap: Lucide.ArrowLeftRight,
-  swatchbook: Lucide.Library,
-  pause: Lucide.Pause,
-  play: Lucide.Play,
-  present: Lucide.Presentation,
-  refresh: Lucide.RefreshCw,
-  reload: Lucide.RotateCcw,
-  robot: Lucide.Bot,
-  search: Lucide.Search,
-  send: Lucide.Send,
-  settings: Lucide.Settings,
-  share: Lucide.Share2,
-  'share-check': Lucide.Check,
-  'share-chevron-down': Lucide.ChevronDown,
-  'share-close-fill': Lucide.X,
-  'share-close-thick': Lucide.X,
-  'share-close-thin': Lucide.X,
-  'share-more-dots': Lucide.MoreHorizontal,
-  'share-refresh-arrows': Lucide.RefreshCw,
-  'share-retry': Lucide.RotateCcw,
-  'share-spinner': Lucide.Loader2,
-  'share-upload-arrow': Lucide.Upload,
-  sliders: Lucide.Sliders,
-  smartphone: Lucide.Smartphone,
-  spinner: Lucide.Loader2,
-  sparkles: Lucide.Sparkles,
-  'sparkles-filled': Lucide.Sparkles,
-  stop: Lucide.Square,
-  sun: Lucide.Sun,
-  moon: Lucide.Moon,
-  'sun-moon': Lucide.SunMoon,
-  terminal: Lucide.Terminal,
-  'thumbs-down': Lucide.ThumbsDown,
-  'thumbs-up': Lucide.ThumbsUp,
-  translate: Lucide.Languages,
-  tweaks: Lucide.SlidersHorizontal,
-  undo: Lucide.Undo,
-  redo: Lucide.Redo,
-  upload: Lucide.Upload,
-  users: Lucide.Users,
-  trash: Lucide.Trash2,
-  'video-ai': Lucide.Video,
-  volume: Lucide.Volume2,
-  'zoom-in': Lucide.ZoomIn,
-  'zoom-out': Lucide.ZoomOut,
-};
-
 /**
  * Lightweight inline-SVG icon set tuned to the design system. Most names map
- * to Lucide React icons with fallbacks to Remix Icon vector paths.
+ * to Remix Icon glyphs (#5517 icon language, inlined for od://); the
+ * remaining stroke-based (Feather/Lucide style) drawings below are the
+ * fallback for names Remix doesn't cover. Use sparingly inside buttons that
+ * already have accessible labels — set `aria-hidden` by default.
  */
 export function Icon({ name, size = 14, strokeWidth = 1.6, ...rest }: Props) {
-  const LucideComp = LUCIDE_MAP[name];
-  if (LucideComp) {
-    const { className, ...restProps } = rest;
-    return (
-      <LucideComp
-        size={size}
-        strokeWidth={strokeWidth}
-        aria-hidden="true"
-        focusable="false"
-        className={`od-icon${name === 'spinner' ? ' icon-spin' : ''}${className ? ` ${className}` : ''}`}
-        {...restProps}
-      />
-    );
-  }
-
   const remixGlyph = REMIX_ICON[name];
   const remixPath = remixGlyph ? REMIX_ICON_PATHS[remixGlyph] : undefined;
   if (remixPath) {

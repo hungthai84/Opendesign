@@ -67,11 +67,7 @@ export const FORCED_APP_THEME = 'light' as const;
  * come back light.
  */
 export function resolveAppTheme(persisted?: AppTheme | null): AppTheme {
-  if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem('open-design:theme');
-    if (saved === 'dark' || saved === 'light') return saved;
-  }
-  return persisted === 'dark' ? 'dark' : 'light';
+  return persisted === FORCED_APP_THEME ? persisted : FORCED_APP_THEME;
 }
 
 export function applyAppearanceToDocument({
@@ -80,10 +76,13 @@ export function applyAppearanceToDocument({
   accentColor?: string;
 }): void {
   const root = document.documentElement;
-  const currentTheme = (typeof window !== 'undefined' && localStorage.getItem('open-design:theme')) || root.getAttribute('data-theme') || 'light';
-  root.setAttribute('data-theme', currentTheme);
-  // Desktop shell: keep the native window appearance in step with the app theme.
-  getOpenDesignHost()?.appearance?.setTheme(currentTheme as AppTheme);
+  root.setAttribute('data-theme', FORCED_APP_THEME);
+  // Desktop shell: keep the native window appearance (the macOS vibrancy
+  // glass material) in step with the app theme. Without this the glass
+  // follows the OS appearance, so the light app over a dark OS sat on dark
+  // glass and read as a muddy gray (#94). Feature-detected — browsers and
+  // older host builds have no appearance capability.
+  getOpenDesignHost()?.appearance?.setTheme(FORCED_APP_THEME);
 
   const normalized = resolveAccentColor(accentColor);
   const vars = accentVars(normalized);

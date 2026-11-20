@@ -136,7 +136,7 @@ const OLD_LOCAL_STORAGE_FAILURE: Record<Locale, string> = {
   uk: "Не вдалося записати файл на диск. Переконайтеся, що є достатньо вільного місця та ви маєте дозвіл зберігати файли в поточній папці.",
   "zh-CN": "文件无法写入磁盘。请确认有足够的剩余空间，且有权限保存到当前文件夹。",
   "zh-TW": "檔案無法寫入磁碟。請確認有足夠的剩餘空間，且有權限儲存到目前資料夾。",
-  vi: "Không thể ghi tệp vào đĩa. Vui lòng đảm bảo có đủ dung lượng trống và bạn có quyền lưu vào thư mục hiện tại.",
+  vi: "Tệp không thể ghi vào đĩa. Vui lòng đảm bảo có đủ dung lượng trống và bạn có quyền lưu vào thư mục hiện tại.",
 };
 
 describe.each(LOCALES)('OPEND-2849 supplement old wording gone: %s', (locale) => {

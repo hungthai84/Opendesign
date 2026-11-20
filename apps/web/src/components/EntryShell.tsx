@@ -2179,6 +2179,38 @@ export function EntryShell({
         // track (the base 56px icon-rail clips the labels + team affordances).
         style={{ ['--entry-rail-width' as string]: '236px' }}
       >
+        {!railOpen ? (
+          <button
+            type="button"
+            className="entry-rail-floating-expand-btn"
+            onClick={() => setRailOpen(true)}
+            title="Mở rộng sidebar (Ctrl+B)"
+            aria-label="Mở rộng sidebar"
+            style={{
+              position: 'absolute',
+              top: '20px',
+              left: '20px',
+              zIndex: 50,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 12px',
+              borderRadius: '10px',
+              background: 'var(--lg-surface, rgba(255, 255, 255, 0.6))',
+              backdropFilter: 'blur(12px)',
+              WebkitBackdropFilter: 'blur(12px)',
+              border: '1px solid var(--lg-border, rgba(255, 255, 255, 0.7))',
+              color: 'var(--lg-text, #24334D)',
+              boxShadow: '0 4px 16px var(--lg-shadow, rgba(0,0,0,0.1))',
+              cursor: 'pointer',
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+          >
+            <Icon name="layout-left" size={16} />
+            <span>Mở sidebar</span>
+          </button>
+        ) : null}
         <EntryNavRail
           view={view}
           onViewChange={changeView}
@@ -2282,8 +2314,8 @@ export function EntryShell({
               <HomeView
                 {...homeViewProps}
                 isActive={view === 'home'}
-                referralNotice={null}
-                inviteSurface={null}
+                referralNotice={<ReferralNotice accountId={amrLoggedIn === true ? amrAccountId : null} profile={amrRegistrationStatus?.profile?.trim() || amrProfile} consoleOrigin={amrRegistrationStatus?.consoleOrigin} active={view === 'home'} context={homeFundingContext} billing={workspaceBillingResponse} />}
+                inviteSurface={<HomeInviteSurface signedOut={amrLoggedIn === false} identityReady={!workspaceContextState.loading && !workspaceContextState.identityChangePending && !workspaceContextState.failure} accountId={amrLoggedIn === true ? amrAccountId : null} context={railWorkspaceContext} active={view === 'home'} onSignInRequested={() => { setInviteSignInRequest('start'); navigate({ kind: 'home', view: 'onboarding' }); }} openAfterSignIn={inviteSignInRequest === 'waiting'} onSignInInviteConsumed={() => setInviteSignInRequest(null)} />}
                 /* Home is the one composer in the shell and consumes the page
                    handoff. The community view used to dock a second HomeView
                    (`variant="dock"`) with a handoff of its own; that mount

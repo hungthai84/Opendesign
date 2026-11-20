@@ -24,6 +24,7 @@ import { SharePanelHeader } from './share/SharePanelHeader';
 import { ShareMoreMenu } from './share/ShareMoreMenu';
 import shareEntryStyles from './share/ShareEntry.module.css';
 import { AnchoredMenuShell } from './chat/AnchoredMenuShell';
+import { GithubPushModal } from './GithubPushModal';
 import { createPortal, flushSync } from 'react-dom';
 import { Button, Input, Select } from '@open-design/components';
 import {
@@ -1924,6 +1925,7 @@ export const FileViewer = memo(function FileViewer({
   manualEditEntryAllowed = true,
 }: Props) {
   const t = useT();
+  const [githubPushOpen, setGithubPushOpen] = useState(false);
   // Survives a temporary HtmlViewer unmount while workspace authority refreshes.
   const pendingShareUpdateAfterLoginRef = useRef<PendingShareUpdateAfterLogin | null>(null);
   const shareLoginReturnRef = useRef<ShareLoginReturn | null>(null);
@@ -6804,6 +6806,8 @@ function ReactComponentViewer({
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [unifiedActionTab, setUnifiedActionTab] = useState<'share' | 'export'>('share');
   const [shareAccess, setShareAccess] = useState<'private' | 'workspace'>('private');
+  const [githubPushOpen, setGithubPushOpen] = useState(false);
+  const [githubPushContent, setGithubPushContent] = useState('');
   const shareRef = useRef<HTMLDivElement | null>(null);
   // HTML entries that load this file as a Babel module. `null` = still
   // checking; `[]` = standalone artifact; non-empty = a module of a
@@ -7090,6 +7094,29 @@ function ReactComponentViewer({
                     ) : null}
                   </div>
                 ) : null}
+                <button
+                  type="button"
+                  className="chrome-action chrome-action-secondary chrome-action-with-label chrome-action-text-only chrome-action-unified"
+                  title="Đẩy lên GitHub"
+                  aria-label="Đẩy lên GitHub"
+                  disabled={viewerOnly}
+                  onClick={() => {
+                    setGithubPushContent(source || '');
+                    setGithubPushOpen(true);
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    color: 'var(--lg-primary, #2878E8)',
+                    fontWeight: 600,
+                  }}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                  </svg>
+                  <span>Đẩy GitHub</span>
+                </button>
               </div>
               {viewerOnly ? null : (
                 <HandoffButton
@@ -7133,6 +7160,13 @@ function ReactComponentViewer({
           <CodeWithLines text={source} />
         )}
       </div>
+      <GithubPushModal
+        open={githubPushOpen}
+        onClose={() => setGithubPushOpen(false)}
+        fileName={file.name}
+        fileContent={githubPushContent}
+        projectName={projectName || projectId}
+      />
     </div>
   );
 }
@@ -7356,6 +7390,8 @@ function HtmlViewer({
   manualEditEntryAllowed?: boolean;
 }) {
   const { locale, t } = useI18n();
+  const [githubPushOpen, setGithubPushOpen] = useState(false);
+  const [githubPushContent, setGithubPushContent] = useState('');
   const iframeKeepAlivePool = useIframeKeepAlivePool();
   // Retained viewers prewarm new file revisions behind the active tab. Keeping
   // the live metadata here is what lets an agent edit finish loading before
@@ -7896,9 +7932,6 @@ function HtmlViewer({
   const toolbarMoreRef = useRef<HTMLDivElement | null>(null);
   const toolbarMoreTriggerRef = useRef<HTMLButtonElement | null>(null);
   useDismissOnOutsideInteraction(toolbarMoreOpen, toolbarMoreRef, () => setToolbarMoreOpen(false));
-  const [hamburgerMenuOpen, setHamburgerMenuOpen] = useState(false);
-  const hamburgerMenuRef = useRef<HTMLDivElement | null>(null);
-  useDismissOnOutsideInteraction(hamburgerMenuOpen, hamburgerMenuRef, () => setHamburgerMenuOpen(false));
   const [versionModalOpen, setVersionModalOpen] = useState<false | 'toolbar' | 'more_menu'>(false);
   const [exportReadyNudge, setExportReadyNudge] = useState(false);
   const exportReadyNudgeSeenRef = useRef<Set<string>>(new Set());
@@ -17285,243 +17318,241 @@ function HtmlViewer({
 
   return (
     <div ref={viewerRootRef} className={`viewer html-viewer${inTabPresent ? ' is-tab-present' : ''}${viewerOnly ? ' html-viewer--viewer-only' : ''}`}>
-      <div className="viewer-toolbar viewer-toolbar--hamburger-mode" style={workspaceActive ? undefined : { visibility: 'hidden' }}>
-        <div className="viewer-hamburger-control" ref={hamburgerMenuRef}>
+      <div className="viewer-toolbar" style={workspaceActive ? undefined : { visibility: 'hidden' }}>
+        <div className="viewer-toolbar-left">
+          {showDeckThumbnailRail ? (
+            <button
+              type="button"
+              className="icon-only deck-thumbnail-toolbar-toggle od-tooltip"
+              aria-expanded={!deckThumbnailsCollapsed}
+              aria-label={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
+              title={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
+              data-tooltip={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
+              data-tooltip-placement="bottom"
+              onClick={() => {
+                fireDeckViewerClick('thumbnail_rail_toggle', {
+                  action: deckThumbnailsCollapsed ? 'expand' : 'collapse',
+                  slide_index: activeDeckSlideIndex,
+                  slide_count: deckSlideTotal,
+                });
+                setDeckThumbnailsCollapsed((value) => !value);
+              }}
+            >
+              <Icon name="panel-left" size={15} />
+            </button>
+          ) : null}
           <button
             type="button"
-            className={`viewer-action viewer-hamburger-trigger od-tooltip${hamburgerMenuOpen ? ' active' : ''}`}
-            onClick={() => setHamburgerMenuOpen((v) => !v)}
-            title="Menu danh sách công cụ"
-            aria-label="Menu danh sách công cụ"
-            aria-expanded={hamburgerMenuOpen}
-            data-testid="viewer-hamburger-menu-trigger"
+            className="icon-only od-tooltip"
+            onClick={reloadHtmlPreview}
+            title={`${t('fileViewer.reload')} ${t('fileViewer.preview')}`}
+            data-tooltip={`${t('fileViewer.reload')} ${t('fileViewer.preview')}`}
+            data-tooltip-placement="bottom"
+            aria-label={`${t('fileViewer.reloadAria')} ${t('fileViewer.preview')}`}
           >
-            <RemixIcon name="menu-line" size={18} />
+            <Icon name="reload" size={14} />
           </button>
-
-          <div
-            className={`viewer-hamburger-dropdown${hamburgerMenuOpen ? ' is-open' : ''}`}
-            role="menu"
-            style={{ display: hamburgerMenuOpen ? 'flex' : 'none' }}
-          >
-            {/* 1. Chế độ xem */}
-            <div className="viewer-hamburger-section">
-              <div className="viewer-hamburger-section-label">Chế độ xem</div>
-              <div className="viewer-tabs viewer-mode-tabs" role="tablist" aria-label="View mode">
-                {([
-                  ['preview', t('fileViewer.preview'), 'eye-line'],
-                  ['source', t('fileViewer.source'), 'code-s-slash-line'],
-                ] as const).map(([id, label, icon]) => (
+          {/* Two-segment pill tablist: both destinations stay visible and the
+              active one is legible at a glance. A single toggle that flips its
+              own label reads as "what am I looking at now?" and forces the user
+              to click to find out. */}
+          <div className="viewer-tabs viewer-mode-tabs" role="tablist" aria-label="View mode">
+            {([
+              ['preview', t('fileViewer.preview'), 'eye-line'],
+              ['source', t('fileViewer.source'), 'code-s-slash-line'],
+            ] as const).map(([id, label, icon]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                className={`viewer-tab ${mode === id ? 'active' : ''}`}
+                aria-label={label}
+                aria-selected={mode === id}
+                disabled={viewerOnly && id === 'source'}
+                title={viewerOnly && id === 'source' ? viewerOnlyDisabledTitle : label}
+                onClick={() => {
+                  fireArtifactToolbarClick(id);
+                  selectMode(id);
+                }}
+              >
+                <RemixIcon name={icon} size={14} className="viewer-tab-icon" />
+                <span className="viewer-tab-label">{label}</span>
+              </button>
+            ))}
+          </div>
+          {showPreviewToolbarControls ? (
+            <span className="viewer-preview-toolbar-inline">
+              <PreviewViewportControls
+                viewport={previewViewport}
+                onViewport={setPreviewViewport}
+                t={t}
+              />
+            </span>
+          ) : null}
+          {showPreviewToolbarControls && showDeckNavigation && !showDeckFloatingNav ? (
+            <span
+              className="deck-nav viewer-deck-nav-inline"
+              role="group"
+              aria-label={t('fileViewer.slideNavAria')}
+            >
+              <button
+                type="button"
+                className="icon-only od-tooltip"
+                onClick={() => postSlide('prev')}
+                title={t('fileViewer.previousSlide')}
+                data-tooltip={t('fileViewer.previousSlide')}
+                data-tooltip-placement="bottom"
+                aria-label={t('fileViewer.previousSlide')}
+                disabled={slideState !== null && slideState.active <= 0}
+              >
+                <Icon name="chevron-right" size={14} style={{ transform: 'rotate(180deg)' }} />
+              </button>
+              <span className="deck-nav-counter">
+                {slideState
+                  ? `${slideState.active + 1} / ${slideState.count}`
+                  : '— / —'}
+              </span>
+              <button
+                type="button"
+                className="icon-only od-tooltip"
+                onClick={() => postSlide('next')}
+                title={t('fileViewer.nextSlide')}
+                data-tooltip={t('fileViewer.nextSlide')}
+                data-tooltip-placement="bottom"
+                aria-label={t('fileViewer.nextSlide')}
+                disabled={
+                  slideState !== null &&
+                  slideState.active >= slideState.count - 1
+                }
+              >
+                <Icon name="chevron-right" size={14} />
+              </button>
+            </span>
+          ) : null}
+        </div>
+        <div className="viewer-toolbar-actions">
+          {showPreviewToolbarControls ? (
+            <div className="viewer-toolbar-inline-actions">
+              {mode === 'preview' ? (
+                <button
+                  type="button"
+                  className="viewer-action viewer-action-icon od-tooltip"
+                  data-testid="edit-screenshot-to-chat-button"
+                  data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.editScreenshotToChat')}
+                  data-tooltip-placement="bottom"
+                  title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.editScreenshotToChat')}
+                  aria-label={t('fileViewer.editScreenshotToChat')}
+                  disabled={viewerOnly}
+                  onClick={() => void handleScreenshotToChat()}
+                >
+                  <RemixIcon name="camera-line" size={15} />
+                </button>
+              ) : null}
+              <div className="artifact-tool-menu-anchor">
+                <button
+                  type="button"
+                  className={`viewer-action viewer-action-icon viewer-comment-toggle od-tooltip${boardMode && !commentCreateMode && boardTool === 'inspect' ? ' active' : ''}`}
+                  data-testid="board-mode-toggle"
+                  data-tooltip={t('fileViewer.comment')}
+                  data-tooltip-placement="bottom"
+                  title={t('fileViewer.comment')}
+                  aria-label={t('fileViewer.comment')}
+                  aria-pressed={boardMode && !commentCreateMode && boardTool === 'inspect'}
+                  onClick={activateCommentTool}
+                >
+                  <RemixIcon name="chat-new-line" size={15} />
+                </button>
+              </div>
+              <button
+                className={`viewer-action viewer-action-icon od-tooltip${drawOverlayOpen ? ' active' : ''}`}
+                type="button"
+                data-testid="draw-overlay-toggle"
+                data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.mark')}
+                data-tooltip-placement="bottom"
+                disabled={viewerOnly}
+                title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.mark')}
+                aria-label={t('fileViewer.mark')}
+                aria-pressed={drawOverlayOpen}
+                onClick={activateDrawTool}
+              >
+                <RemixIcon name="mark-pen-line" size={15} />
+              </button>
+              <span className="viewer-toolbar-tool-divider" aria-hidden />
+              <button
+                className={`viewer-action viewer-action-icon od-tooltip${manualEditMode ? ' active' : ''}`}
+                type="button"
+                data-testid="manual-edit-mode-toggle"
+                data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.edit')}
+                data-tooltip-placement="bottom"
+                disabled={viewerOnly || (!manualEditMode && !manualEditEntryAllowed)}
+                title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.edit')}
+                aria-label={t('fileViewer.edit')}
+                aria-pressed={manualEditMode}
+                onClick={activateManualEditTool}
+              >
+                <RemixIcon name="edit-line" size={15} />
+              </button>
+              <span className="viewer-toolbar-tool-divider" aria-hidden />
+              <button
+                ref={commentPanelToggleRef}
+                type="button"
+                className={`viewer-action viewer-comment-count-trigger viewer-comment-toggle od-tooltip${boardMode && commentCreateMode ? ' active' : ''}`}
+                data-testid="comment-panel-toggle"
+                data-tooltip={t('chat.tabComments')}
+                data-tooltip-placement="bottom"
+                title={t('chat.tabComments')}
+                aria-label={`${t('chat.tabComments')} (${visibleSideComments.length})`}
+                aria-pressed={boardMode && commentCreateMode}
+                onClick={(event) => activateCommentCreateTool(event.currentTarget)}
+              >
+                <RemixIcon name="message-3-line" size={15} />
+                <span className="viewer-comment-count" aria-hidden>{visibleSideComments.length}</span>
+                {!commentPanelOpen && hasUnreadSideComments ? <span data-testid="comment-unread-dot" aria-hidden style={{ background: 'var(--red)', borderRadius: '50%', height: 7, width: 7, position: 'absolute', right: 2, top: 2 }} /> : null}
+              </button>
+              {source !== null && mode === 'preview' ? (
+                <div className="zoom-menu viewer-toolbar-zoom" ref={zoomMenuRef}>
                   <button
-                    key={id}
                     type="button"
-                    role="tab"
-                    className={`viewer-tab ${mode === id ? 'active' : ''}`}
-                    aria-label={label}
-                    aria-selected={mode === id}
-                    disabled={viewerOnly && id === 'source'}
-                    title={viewerOnly && id === 'source' ? viewerOnlyDisabledTitle : label}
+                    className="viewer-action zoom-trigger od-tooltip"
+                    aria-haspopup="menu"
+                    aria-expanded={zoomMenuOpen}
+                    title={t('fileViewer.resetZoom')}
+                    data-tooltip={t('fileViewer.resetZoom')}
+                    data-tooltip-placement="bottom"
                     onClick={() => {
-                      fireArtifactToolbarClick(id);
-                      selectMode(id);
+                      fireArtifactToolbarClick('zoom_level_dropdown');
+                      setZoomMenuOpen((v) => !v);
                     }}
                   >
-                    <RemixIcon name={icon} size={14} className="viewer-tab-icon" />
-                    <span className="viewer-tab-label">{label}</span>
+                    <span style={{ fontVariantNumeric: 'tabular-nums' }}>{previewZoomText}</span>
                   </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 2. Thiết bị & Tải lại */}
-            <div className="viewer-hamburger-section">
-              <div className="viewer-hamburger-section-label">Thiết bị & Thao tác</div>
-              <div className="viewer-hamburger-row">
-                <button
-                  type="button"
-                  className="icon-only od-tooltip viewer-hamburger-btn-inline"
-                  onClick={reloadHtmlPreview}
-                  title={`${t('fileViewer.reload')} ${t('fileViewer.preview')}`}
-                  aria-label={`${t('fileViewer.reloadAria')} ${t('fileViewer.preview')}`}
-                >
-                  <Icon name="reload" size={14} />
-                  <span>Tải lại</span>
-                </button>
-                {showPreviewToolbarControls ? (
-                  <span className="viewer-preview-toolbar-inline">
-                    <PreviewViewportControls
-                      viewport={previewViewport}
-                      onViewport={setPreviewViewport}
-                      t={t}
-                    />
-                  </span>
-                ) : null}
-              </div>
-            </div>
-
-            {/* 3. Công cụ tương tác */}
-            <div className="viewer-hamburger-section">
-              <div className="viewer-hamburger-section-label">Công cụ tương tác</div>
-              <div className="viewer-hamburger-tools-row">
-                {mode === 'preview' ? (
-                  <button
-                    type="button"
-                    className="viewer-action viewer-action-icon od-tooltip"
-                    data-testid="edit-screenshot-to-chat-button"
-                    data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.editScreenshotToChat')}
-                    title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.editScreenshotToChat')}
-                    aria-label={t('fileViewer.editScreenshotToChat')}
-                    disabled={viewerOnly}
-                    onClick={() => void handleScreenshotToChat()}
-                  >
-                    <RemixIcon name="camera-line" size={15} />
-                  </button>
-                ) : null}
-                <div className="artifact-tool-menu-anchor">
-                  <button
-                    type="button"
-                    className={`viewer-action viewer-action-icon viewer-comment-toggle od-tooltip${boardMode && !commentCreateMode && boardTool === 'inspect' ? ' active' : ''}`}
-                    data-testid="board-mode-toggle"
-                    data-tooltip={t('fileViewer.comment')}
-                    title={t('fileViewer.comment')}
-                    aria-label={t('fileViewer.comment')}
-                    aria-pressed={boardMode && !commentCreateMode && boardTool === 'inspect'}
-                    onClick={activateCommentTool}
-                  >
-                    <RemixIcon name="chat-new-line" size={15} />
-                  </button>
+                  {zoomMenuOpen ? (
+                    <div className="zoom-menu-popover" role="menu">
+                      {[50, 75, 100, 125, 150, 200].map((level) => (
+                        <button
+                          key={level}
+                          type="button"
+                          className={`zoom-menu-item${zoomLevelActive(level) ? ' active' : ''}`}
+                          role="menuitem"
+                          onClick={() => {
+                            setPreviewZoomCached(fileViewportKey, level, 'manual');
+                            setZoomMode('manual');
+                            setZoom(level);
+                            setZoomMenuOpen(false);
+                          }}
+                        >
+                          <span style={{ fontVariantNumeric: 'tabular-nums' }}>{level}%</span>
+                          {zoomLevelActive(level) ? (
+                            <Icon name="check" size={13} />
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
-                <button
-                  className={`viewer-action viewer-action-icon od-tooltip${drawOverlayOpen ? ' active' : ''}`}
-                  type="button"
-                  data-testid="draw-overlay-toggle"
-                  data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.mark')}
-                  disabled={viewerOnly}
-                  title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.mark')}
-                  aria-label={t('fileViewer.mark')}
-                  aria-pressed={drawOverlayOpen}
-                  onClick={activateDrawTool}
-                >
-                  <RemixIcon name="mark-pen-line" size={15} />
-                </button>
-                <button
-                  className={`viewer-action viewer-action-icon od-tooltip${manualEditMode ? ' active' : ''}`}
-                  type="button"
-                  data-testid="manual-edit-mode-toggle"
-                  data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.edit')}
-                  disabled={viewerOnly || (!manualEditMode && !manualEditEntryAllowed)}
-                  title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.edit')}
-                  aria-label={t('fileViewer.edit')}
-                  aria-pressed={manualEditMode}
-                  onClick={activateManualEditTool}
-                >
-                  <RemixIcon name="edit-line" size={15} />
-                </button>
-                <button
-                  ref={commentPanelToggleRef}
-                  type="button"
-                  className={`viewer-action viewer-comment-count-trigger viewer-comment-toggle od-tooltip${boardMode && commentCreateMode ? ' active' : ''}`}
-                  data-testid="comment-panel-toggle"
-                  data-tooltip={t('chat.tabComments')}
-                  title={t('chat.tabComments')}
-                  aria-label={`${t('chat.tabComments')} (${visibleSideComments.length})`}
-                  aria-pressed={boardMode && commentCreateMode}
-                  onClick={(event) => activateCommentCreateTool(event.currentTarget)}
-                >
-                  <RemixIcon name="message-3-line" size={15} />
-                  <span className="viewer-comment-count" aria-hidden>{visibleSideComments.length}</span>
-                  {!commentPanelOpen && hasUnreadSideComments ? <span data-testid="comment-unread-dot" aria-hidden style={{ background: 'var(--red)', borderRadius: '50%', height: 7, width: 7, position: 'absolute', right: 2, top: 2 }} /> : null}
-                </button>
-              </div>
+              ) : null}
             </div>
-
-            {/* 4. Thu phóng (Zoom) */}
-            {source !== null && mode === 'preview' ? (
-              <div className="viewer-hamburger-section">
-                <div className="viewer-hamburger-section-label">Thu phóng ({previewZoomText})</div>
-                <div className="viewer-hamburger-zoom-levels">
-                  {[50, 75, 100, 125, 150, 200].map((level) => (
-                    <button
-                      key={level}
-                      type="button"
-                      className={`viewer-hamburger-zoom-btn${zoomLevelActive(level) ? ' active' : ''}`}
-                      onClick={() => {
-                        setPreviewZoomCached(fileViewportKey, level, 'manual');
-                        setZoomMode('manual');
-                        setZoom(level);
-                      }}
-                    >
-                      {level}%
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-
-        {showDeckThumbnailRail ? (
-          <button
-            type="button"
-            className="icon-only deck-thumbnail-toolbar-toggle od-tooltip"
-            aria-expanded={!deckThumbnailsCollapsed}
-            aria-label={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
-            title={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
-            data-tooltip={deckThumbnailsCollapsed ? t('designFiles.expandGroup') : t('designFiles.collapseGroup')}
-            data-tooltip-placement="bottom"
-            onClick={() => {
-              fireDeckViewerClick('thumbnail_rail_toggle', {
-                action: deckThumbnailsCollapsed ? 'expand' : 'collapse',
-                slide_index: activeDeckSlideIndex,
-                slide_count: deckSlideTotal,
-              });
-              setDeckThumbnailsCollapsed((value) => !value);
-            }}
-          >
-            <Icon name="panel-left" size={15} />
-          </button>
-        ) : null}
-
-        {showPreviewToolbarControls && showDeckNavigation && !showDeckFloatingNav ? (
-          <span
-            className="deck-nav viewer-deck-nav-inline"
-            role="group"
-            aria-label={t('fileViewer.slideNavAria')}
-          >
-            <button
-              type="button"
-              className="icon-only od-tooltip"
-              onClick={() => postSlide('prev')}
-              title={t('fileViewer.previousSlide')}
-              data-tooltip={t('fileViewer.previousSlide')}
-              data-tooltip-placement="bottom"
-              aria-label={t('fileViewer.previousSlide')}
-              disabled={slideState !== null && slideState.active <= 0}
-            >
-              <Icon name="chevron-right" size={14} style={{ transform: 'rotate(180deg)' }} />
-            </button>
-            <span className="deck-nav-counter">
-              {slideState
-                ? `${slideState.active + 1} / ${slideState.count}`
-                : '— / —'}
-            </span>
-            <button
-              type="button"
-              className="icon-only od-tooltip"
-              onClick={() => postSlide('next')}
-              title={t('fileViewer.nextSlide')}
-              data-tooltip={t('fileViewer.nextSlide')}
-              data-tooltip-placement="bottom"
-              aria-label={t('fileViewer.nextSlide')}
-              disabled={
-                slideState !== null &&
-                slideState.active >= slideState.count - 1
-              }
-            >
-              <Icon name="chevron-right" size={14} />
-            </button>
-          </span>
-        ) : null}
+          ) : null}
           <div className="viewer-toolbar-more" ref={toolbarMoreRef}>
             <button
               ref={toolbarMoreTriggerRef}
@@ -17688,6 +17719,7 @@ function HtmlViewer({
             ) : null}
           </div>
         </div>
+      </div>
       {((filePrimaryActions: ReactNode) => (
         chromeActionsHost
           ? createPortal(
@@ -17818,6 +17850,32 @@ function HtmlViewer({
                     {/* Owner C0: share the artifact card's forward-arrow glyph. */}
                     <RemixIcon name="share-forward-line" size={15} />
                     <span>{shareMenuLabel}</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`chrome-action chrome-action-secondary chrome-action-with-label chrome-action-text-only chrome-action-unified ${shareEntryStyles.toolbar}`}
+                    title="Đẩy lên GitHub"
+                    aria-label="Đẩy lên GitHub"
+                    onClick={async () => {
+                      let text = '';
+                      try {
+                        text = (await fetchProjectFileText(projectId, file.name, { workspaceContext: stableWorkspaceContextRef.current.value })) ?? '';
+                      } catch {}
+                      setGithubPushContent(text || liveHtml || '');
+                      setGithubPushOpen(true);
+                    }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      color: 'var(--lg-primary, #2878E8)',
+                      fontWeight: 600,
+                    }}
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                    <span>Đẩy GitHub</span>
                   </button>
                   {afterExportGuide.noticeId !== null ? (
                     <AfterExportShareGuide
@@ -18455,6 +18513,13 @@ function HtmlViewer({
                   />
                 </div>
               ) : null}
+              <GithubPushModal
+                open={githubPushOpen}
+                onClose={() => setGithubPushOpen(false)}
+                fileName={file.name}
+                fileContent={githubPushContent}
+                projectName={projectName || projectId}
+              />
               {showDeckFloatingNav ? (
                 <div className="deck-floating-nav" aria-label="Deck navigation">
                   <button
@@ -19521,6 +19586,9 @@ function ImageViewer({
 }) {
   const t = useT();
   const { workspaceContext } = useProjectCollabContext();
+  const [githubPushOpen, setGithubPushOpen] = useState(false);
+  const [githubPushContent, setGithubPushContent] = useState('');
+  const [githubPushIsBase64, setGithubPushIsBase64] = useState(false);
   const url = appendResourceQuery(
     projectFileUrl(projectId, file.name, workspaceContext),
     `v=${Math.round(file.mtime)}`,
@@ -19536,6 +19604,47 @@ function ImageViewer({
           </span>
         </div>
         <div className="viewer-toolbar-actions">
+          <button
+            type="button"
+            className="ghost-link"
+            title="Đẩy lên GitHub"
+            aria-label="Đẩy lên GitHub"
+            onClick={async () => {
+              try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                  const base64Data = (reader.result as string).split(',')[1] || '';
+                  setGithubPushContent(base64Data);
+                  setGithubPushIsBase64(true);
+                  setGithubPushOpen(true);
+                };
+                reader.readAsDataURL(blob);
+              } catch {
+                setGithubPushContent('');
+                setGithubPushIsBase64(false);
+                setGithubPushOpen(true);
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: 'var(--lg-primary, #2878E8)',
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: 'none',
+              background: 'transparent',
+              fontFamily: 'inherit',
+              fontSize: 'inherit',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            <span>Đẩy GitHub</span>
+          </button>
           <a
             className="ghost-link"
             href={projectFileUrl(projectId, file.name, workspaceContext)}
@@ -19556,6 +19665,14 @@ function ImageViewer({
       <div className="viewer-body image-body">
         <img alt={file.name} src={url} />
       </div>
+      <GithubPushModal
+        open={githubPushOpen}
+        onClose={() => setGithubPushOpen(false)}
+        fileName={file.name}
+        fileContent={githubPushContent}
+        projectName={projectId}
+        isBase64={githubPushIsBase64}
+      />
     </div>
   );
 }

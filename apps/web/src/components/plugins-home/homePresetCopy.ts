@@ -8,7 +8,7 @@ interface HomePresetCopy {
 // Home recommendations describe the user's intended result. Template details
 // keep their original names and technical descriptions from the manifest.
 // Every curated preset must provide copy for all supported UI locales.
-const HOME_PRESET_COPY: Record<string, Partial<Record<Locale, HomePresetCopy>>> = {
+const HOME_PRESET_COPY: Record<string, Partial<Record<Locale, HomePresetCopy>> & Record<'en', HomePresetCopy>> = {
   'example-pm-spec': {
     'zh-CN': {
       title: '产品规格文档',
