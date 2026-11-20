@@ -2072,7 +2072,7 @@ export const FileViewer = memo(function FileViewer({
     return <SvgViewer projectId={projectId} file={file} />;
   }
   if (file.kind === 'image') {
-    return <ImageViewer projectId={projectId} file={file} />;
+    return <ImageViewer projectId={projectId} file={file} workspaceActive={workspaceActive} />;
   }
   if (file.kind === 'video') {
     return <VideoViewer projectId={projectId} file={file} />;
@@ -2084,7 +2084,7 @@ export const FileViewer = memo(function FileViewer({
     if (isRenderableSketchJson(file)) {
       return <SketchViewer projectId={projectId} file={file} />;
     }
-    return <ImageViewer projectId={projectId} file={file} />;
+    return <ImageViewer projectId={projectId} file={file} workspaceActive={workspaceActive} />;
   }
   if (file.kind === 'text' || file.kind === 'code') {
     return <TextViewer projectId={projectId} file={file} />;
@@ -17320,10 +17320,13 @@ function HtmlViewer({
     </section>
   ) : null;
 
-  return (
-    <div ref={viewerRootRef} className={`viewer html-viewer${inTabPresent ? ' is-tab-present' : ''}${viewerOnly ? ' html-viewer--viewer-only' : ''}`}>
-      <div className="viewer-toolbar" style={workspaceActive ? undefined : { visibility: 'hidden' }}>
-        <div className="viewer-toolbar-left">
+  const isPortaledToTab = Boolean(workspaceActive && chromeActionsHost);
+  const viewerToolbarNode = (
+    <div
+      className={isPortaledToTab ? 'viewer-toolbar-in-tab' : 'viewer-toolbar'}
+      style={!isPortaledToTab && workspaceActive ? undefined : isPortaledToTab ? { display: 'inline-flex', alignItems: 'center', gap: '8px' } : { visibility: 'hidden' }}
+    >
+      <div className="viewer-toolbar-left" style={isPortaledToTab ? { display: 'inline-flex', alignItems: 'center', gap: '8px' } : undefined}>
           {showDeckThumbnailRail ? (
             <button
               type="button"
@@ -17739,13 +17742,23 @@ function HtmlViewer({
           </div>
         </div>
       </div>
+    );
+
+  return (
+    <div ref={viewerRootRef} className={`viewer html-viewer${inTabPresent ? ' is-tab-present' : ''}${viewerOnly ? ' html-viewer--viewer-only' : ''}`}>
+      {isPortaledToTab ? null : viewerToolbarNode}
       {((filePrimaryActions: ReactNode) => (
         chromeActionsHost
           ? createPortal(
               <div
                 data-od-file-actions-owner={file.name}
-                style={{ display: workspaceActive ? 'contents' : 'none' }}
+                style={{
+                  display: workspaceActive ? 'inline-flex' : 'none',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
               >
+                {workspaceActive && isPortaledToTab ? viewerToolbarNode : null}
                 {filePrimaryActions}
               </div>,
               chromeActionsHost,
@@ -19617,88 +19630,121 @@ function escapeHtmlAttr(value: string): string {
 function ImageViewer({
   projectId,
   file,
+  workspaceActive = true,
 }: {
   projectId: string;
   file: ProjectFile;
+  workspaceActive?: boolean;
 }) {
   const t = useT();
   const { workspaceContext } = useProjectCollabContext();
   const [githubPushOpen, setGithubPushOpen] = useState(false);
   const [githubPushContent, setGithubPushContent] = useState('');
   const [githubPushIsBase64, setGithubPushIsBase64] = useState(false);
+  const [chromeActionsHost, setChromeActionsHost] = useState<HTMLElement | null>(
+    () => (typeof document === 'undefined' ? null : resolveChromeActionsHost()),
+  );
+  useLayoutEffect(() => {
+    if (!workspaceActive || typeof document === 'undefined') return;
+    setChromeActionsHost(resolveChromeActionsHost());
+  }, [workspaceActive]);
+  const isPortaledToTab = Boolean(workspaceActive && chromeActionsHost);
   const url = appendResourceQuery(
     projectFileUrl(projectId, file.name, workspaceContext),
     `v=${Math.round(file.mtime)}`,
   );
+
+  const toolbarNode = (
+    <div
+      className={isPortaledToTab ? 'image-viewer-toolbar-in-tab' : 'viewer-toolbar'}
+      style={isPortaledToTab ? { display: 'inline-flex', alignItems: 'center', gap: '10px' } : undefined}
+    >
+      <div className="viewer-toolbar-left" style={isPortaledToTab ? { display: 'inline-flex', alignItems: 'center' } : undefined}>
+        <span className="viewer-meta" style={{ fontSize: '12px', opacity: 0.85, whiteSpace: 'nowrap' }}>
+          {file.kind === 'sketch'
+            ? t('fileViewer.sketchMeta', { size: humanSize(file.size) })
+            : t('fileViewer.imageMeta', { size: humanSize(file.size) })}
+        </span>
+      </div>
+      <div className="viewer-toolbar-actions" style={isPortaledToTab ? { display: 'inline-flex', alignItems: 'center', gap: '8px' } : undefined}>
+        <button
+          type="button"
+          className="ghost-link"
+          title="Đẩy lên GitHub"
+          aria-label="Đẩy lên GitHub"
+          onClick={async () => {
+            try {
+              const response = await fetch(url);
+              const blob = await response.blob();
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64Data = (reader.result as string).split(',')[1] || '';
+                setGithubPushContent(base64Data);
+                setGithubPushIsBase64(true);
+                setGithubPushOpen(true);
+              };
+              reader.readAsDataURL(blob);
+            } catch {
+              setGithubPushContent('');
+              setGithubPushIsBase64(false);
+              setGithubPushOpen(true);
+            }
+          }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            color: 'var(--lg-primary, #2878E8)',
+            fontWeight: 600,
+            cursor: 'pointer',
+            border: 'none',
+            background: 'transparent',
+            fontFamily: 'inherit',
+            fontSize: 'inherit',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+            <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+          </svg>
+          <span>Đẩy GitHub</span>
+        </button>
+        <a
+          className="ghost-link"
+          href={projectFileUrl(projectId, file.name, workspaceContext)}
+          download={file.name}
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {t('fileViewer.download')}
+        </a>
+        <a
+          className="ghost-link"
+          href={projectFileUrl(projectId, file.name, workspaceContext)}
+          target="_blank"
+          rel="noreferrer noopener"
+          style={{ whiteSpace: 'nowrap' }}
+        >
+          {t('fileViewer.open')}
+        </a>
+      </div>
+    </div>
+  );
+
   return (
     <div className="viewer image-viewer">
-      <div className="viewer-toolbar">
-        <div className="viewer-toolbar-left">
-          <span className="viewer-meta">
-            {file.kind === 'sketch'
-              ? t('fileViewer.sketchMeta', { size: humanSize(file.size) })
-              : t('fileViewer.imageMeta', { size: humanSize(file.size) })}
-          </span>
-        </div>
-        <div className="viewer-toolbar-actions">
-          <button
-            type="button"
-            className="ghost-link"
-            title="Đẩy lên GitHub"
-            aria-label="Đẩy lên GitHub"
-            onClick={async () => {
-              try {
-                const response = await fetch(url);
-                const blob = await response.blob();
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                  const base64Data = (reader.result as string).split(',')[1] || '';
-                  setGithubPushContent(base64Data);
-                  setGithubPushIsBase64(true);
-                  setGithubPushOpen(true);
-                };
-                reader.readAsDataURL(blob);
-              } catch {
-                setGithubPushContent('');
-                setGithubPushIsBase64(false);
-                setGithubPushOpen(true);
-              }
-            }}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: 'var(--lg-primary, #2878E8)',
-              fontWeight: 600,
-              cursor: 'pointer',
-              border: 'none',
-              background: 'transparent',
-              fontFamily: 'inherit',
-              fontSize: 'inherit',
-            }}
+      {workspaceActive && chromeActionsHost ? (
+        createPortal(
+          <div
+            data-od-file-actions-owner={file.name}
+            style={{ display: 'inline-flex', alignItems: 'center' }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-            </svg>
-            <span>Đẩy GitHub</span>
-          </button>
-          <a
-            className="ghost-link"
-            href={projectFileUrl(projectId, file.name, workspaceContext)}
-            download={file.name}
-          >
-            {t('fileViewer.download')}
-          </a>
-          <a
-            className="ghost-link"
-            href={projectFileUrl(projectId, file.name, workspaceContext)}
-            target="_blank"
-            rel="noreferrer noopener"
-          >
-            {t('fileViewer.open')}
-          </a>
-        </div>
-      </div>
+            {toolbarNode}
+          </div>,
+          chromeActionsHost,
+        )
+      ) : (
+        toolbarNode
+      )}
       <div className="viewer-body image-body">
         <img alt={file.name} src={url} />
       </div>

@@ -1109,4 +1109,104 @@ button[role="tab"][aria-selected="true"] {
   gap: 8px !important;
 }
 
+/* --- 11. UNIFIED TAB & TOOLBAR ROW (Single Row Header) ------- */
+
+.ws-tabs-shell {
+  height: 44px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 12px !important;
+  background: var(--lg-surface, rgba(255, 255, 255, 0.45)) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid var(--lg-border, rgba(255, 255, 255, 0.5)) !important;
+}
+
+[data-theme="dark"] .ws-tabs-shell {
+  background: var(--lg-surface, rgba(16, 24, 40, 0.6)) !important;
+  border-bottom: 1px solid var(--lg-border, rgba(255, 255, 255, 0.12)) !important;
+}
+
+.ws-tabs-bar {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow-x: auto !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.ws-tabs-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-inline-start: auto !important;
+  flex-shrink: 0 !important;
+}
+
+.ws-tabs-file-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex-shrink: 0 !important;
+}
+
+.viewer-toolbar-in-tab,
+.image-viewer-toolbar-in-tab {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  min-height: auto !important;
+}
+
+.viewer-toolbar-in-tab .viewer-toolbar-left,
+.viewer-toolbar-in-tab .viewer-toolbar-actions,
+.image-viewer-toolbar-in-tab .viewer-toolbar-left,
+.image-viewer-toolbar-in-tab .viewer-toolbar-actions {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.viewer-toolbar-in-tab .viewer-tabs {
+  margin: 0 !important;
+  height: 30px !important;
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-radius: 999px !important;
+  padding: 2px !important;
+  border: 1px solid var(--lg-border) !important;
+}
+
+[data-theme="dark"] .viewer-toolbar-in-tab .viewer-tabs {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+.viewer-toolbar-in-tab .viewer-tab {
+  border-radius: 999px !important;
+  height: 26px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.viewer-toolbar-in-tab .icon-only,
+.viewer-toolbar-in-tab .viewer-action,
+.viewer-toolbar-in-tab .chrome-action {
+  width: 30px !important;
+  height: 30px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
 
