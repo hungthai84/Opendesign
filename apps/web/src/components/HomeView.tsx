@@ -3107,13 +3107,12 @@ export function HomeView({
     }
   }
 
-  // #5517: with no projects yet the home (logo + heading + composer) centers
-  // vertically instead of hugging the top.
-  const recentProjectsEmpty = !projectsLoading && projects.length === 0;
+  // User requested Home hero and content always centered
+  const isCentered = variant !== 'dock';
 
   return (
     <div
-      className={`home-view${recentProjectsEmpty ? ' home-view--centered' : ''}${
+      className={`home-view${isCentered ? ' home-view--centered' : ''}${
         variant === 'dock' ? ' home-view--dock' : ''
       }`}
       data-testid="home-view"
