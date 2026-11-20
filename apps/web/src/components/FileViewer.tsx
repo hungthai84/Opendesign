@@ -7932,6 +7932,10 @@ function HtmlViewer({
   const toolbarMoreRef = useRef<HTMLDivElement | null>(null);
   const toolbarMoreTriggerRef = useRef<HTMLButtonElement | null>(null);
   useDismissOnOutsideInteraction(toolbarMoreOpen, toolbarMoreRef, () => setToolbarMoreOpen(false));
+  const [workspaceMenuOpen, setWorkspaceMenuOpen] = useState(false);
+  const workspaceMenuRef = useRef<HTMLDivElement | null>(null);
+  const handoffButtonWrapRef = useRef<HTMLDivElement | null>(null);
+  useDismissOnOutsideInteraction(workspaceMenuOpen, workspaceMenuRef, () => setWorkspaceMenuOpen(false));
   const [versionModalOpen, setVersionModalOpen] = useState<false | 'toolbar' | 'more_menu'>(false);
   const [exportReadyNudge, setExportReadyNudge] = useState(false);
   const exportReadyNudgeSeenRef = useRef<Set<string>>(new Set());
@@ -17558,18 +17562,33 @@ function HtmlViewer({
               ref={toolbarMoreTriggerRef}
               type="button"
               className="viewer-action viewer-action-icon od-tooltip"
-              aria-label={t('nextStep.more')}
+              aria-label="Danh mục công cụ"
               aria-haspopup="menu"
               aria-expanded={toolbarMoreOpen}
-              data-tooltip={t('nextStep.more')}
+              data-tooltip="Danh mục công cụ"
               data-tooltip-placement="bottom"
-              title={t('nextStep.more')}
+              title="Danh mục công cụ"
               onClick={() => setToolbarMoreOpen((value) => !value)}
             >
-              <RemixIcon name="more-2-line" size={16} />
+              <RemixIcon name="menu-line" size={16} />
             </button>
             {toolbarMoreOpen ? (
               <div className="viewer-toolbar-more-menu" role="menu">
+                {mode === 'preview' ? (
+                  <button
+                    type="button"
+                    className="viewer-toolbar-more-item"
+                    role="menuitem"
+                    disabled={viewerOnly}
+                    onClick={() => {
+                      setToolbarMoreOpen(false);
+                      void handleScreenshotToChat();
+                    }}
+                  >
+                    <RemixIcon name="camera-line" size={15} />
+                    <span>{t('fileViewer.editScreenshotToChat')}</span>
+                  </button>
+                ) : null}
                 {versioningAvailable ? (
                   <button
                     type="button"
@@ -17734,182 +17753,213 @@ function HtmlViewer({
           : workspaceActive
             ? filePrimaryActions
             : null
-      ))(<>
-          {showPresent ? (
-            <div className="present-wrap chrome-present-wrap">
+      ))(
+        <div
+          className="workspace-hamburger-menu-wrap"
+          ref={workspaceMenuRef}
+          data-artifact-anchor={toolbarMenuAnchorId}
+          style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+        >
+          <button
+            type="button"
+            className="chrome-action chrome-action-secondary chrome-action-icon od-tooltip"
+            aria-label="Danh mục tác vụ"
+            title="Danh mục tác vụ"
+            data-tooltip="Danh mục tác vụ"
+            data-tooltip-placement="bottom"
+            aria-expanded={workspaceMenuOpen}
+            onClick={() => setWorkspaceMenuOpen((v) => !v)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 32,
+              height: 32,
+              borderRadius: '10px',
+              background: 'var(--lg-surface, rgba(255, 255, 255, 0.55))',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid var(--lg-border, rgba(255, 255, 255, 0.75))',
+              color: 'var(--lg-text, currentColor)',
+              boxShadow: '0 2px 8px var(--lg-shadow, rgba(0, 0, 0, 0.08))',
+              cursor: 'pointer',
+            }}
+          >
+            <RemixIcon name="menu-line" size={16} />
+          </button>
+          {workspaceMenuOpen ? (
+            <div
+              className="workspace-hamburger-dropdown"
+              role="menu"
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 6px)',
+                right: 0,
+                zIndex: 9999,
+                minWidth: 200,
+                background: 'var(--lg-surface-strong, rgba(255, 255, 255, 0.95))',
+                backdropFilter: 'blur(28px) saturate(1.8)',
+                WebkitBackdropFilter: 'blur(28px) saturate(1.8)',
+                border: '1px solid var(--lg-border, rgba(255, 255, 255, 0.8))',
+                borderRadius: '14px',
+                boxShadow: '0 16px 40px var(--lg-shadow, rgba(0, 0, 0, 0.2))',
+                padding: '6px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+              }}
+            >
+              {rawCanDownload ? (
+                <button
+                  type="button"
+                  className="workspace-dropdown-item"
+                  role="menuitem"
+                  disabled={viewerOnly}
+                  onClick={() => {
+                    setWorkspaceMenuOpen(false);
+                    openDownloadMenu();
+                  }}
+                >
+                  <RemixIcon name="download-line" size={15} />
+                  <span>{t('fileViewer.unifiedExportTab')}</span>
+                </button>
+              ) : null}
+
               <button
-                className="chrome-action chrome-action-secondary chrome-action-icon present-trigger od-tooltip"
-                aria-haspopup="menu"
-                aria-expanded={presentMenuOpen}
-                aria-label={t('fileViewer.present')}
-                data-tooltip={t('fileViewer.present')}
-                data-tooltip-placement="bottom"
-                title={t('fileViewer.present')}
+                type="button"
+                className="workspace-dropdown-item"
+                role="menuitem"
+                disabled={viewerOnly || !rawCanShare}
                 onClick={() => {
-                  fireArtifactHeaderClick('present_dropdown');
-                  setPresentMenuOpen((v) => !v);
+                  setWorkspaceMenuOpen(false);
+                  openShareMenu();
                 }}
               >
-                <RemixIcon name="slideshow-3-line" size={15} />
+                <RemixIcon name="share-forward-line" size={15} />
+                <span>{shareMenuLabel}</span>
               </button>
-              {presentMenuOpen ? (
-                <div className="present-menu" role="menu">
-                  <button role="menuitem" onClick={() => { firePresentPopoverClick('in_this_tab'); presentInThisTab(); }}>
-                    <span className="present-icon"><RemixIcon name="eye-line" size={14} /></span>{' '}
-                    <span className="present-menu-copy">
-                      <span>{t('fileViewer.presentInTab')}</span>
-                      {effectiveDeck ? <small>{t('fileViewer.presentInTabDeckHint')}</small> : null}
-                    </span>
-                  </button>
-                  <button role="menuitem" onClick={() => { firePresentPopoverClick('fullscreen'); presentFullscreen(); }}>
-                    <span className="present-icon"><RemixIcon name="play-line" size={14} /></span>{' '}
-                    {t('fileViewer.presentFullscreen')}
-                  </button>
-                  <button role="menuitem" onClick={() => { firePresentPopoverClick('new_tab'); presentNewTab(); }}>
-                    <span className="present-icon"><RemixIcon name="share-forward-line" size={14} /></span>{' '}
-                    {t('fileViewer.presentNewTab')}
-                  </button>
-                </div>
+
+              <button
+                type="button"
+                className="workspace-dropdown-item"
+                role="menuitem"
+                disabled={viewerOnly}
+                onClick={async () => {
+                  setWorkspaceMenuOpen(false);
+                  let text = '';
+                  try {
+                    text = (await fetchProjectFileText(projectId, file.name, { workspaceContext: stableWorkspaceContextRef.current.value })) ?? '';
+                  } catch {}
+                  setGithubPushContent(text || liveHtml || '');
+                  setGithubPushOpen(true);
+                }}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                </svg>
+                <span>Đẩy GitHub</span>
+              </button>
+
+              {!viewerOnly ? (
+                <button
+                  type="button"
+                  className="workspace-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setWorkspaceMenuOpen(false);
+                    if (handoffButtonWrapRef.current) {
+                      const btn = handoffButtonWrapRef.current.querySelector('button');
+                      if (btn) btn.click();
+                    }
+                  }}
+                >
+                  <RemixIcon name="folder-line" size={15} />
+                  <span>Open in Explorer</span>
+                </button>
+              ) : null}
+
+              {versioningAvailable && (rawCanShare || rawCanDownload) ? (
+                <button
+                  type="button"
+                  className="workspace-dropdown-item"
+                  role="menuitem"
+                  disabled={source === null || viewerOnly}
+                  onClick={() => {
+                    setWorkspaceMenuOpen(false);
+                    setVersionModalOpen(versionModalOpen ? false : 'toolbar');
+                  }}
+                >
+                  <RemixIcon name="history-line" size={15} />
+                  <span>{t('fileViewer.versions.entry')}</span>
+                </button>
+              ) : null}
+
+              {showPresent ? (
+                <button
+                  type="button"
+                  className="workspace-dropdown-item"
+                  role="menuitem"
+                  onClick={() => {
+                    setWorkspaceMenuOpen(false);
+                    presentInThisTab();
+                  }}
+                >
+                  <RemixIcon name="slideshow-3-line" size={15} />
+                  <span>{t('fileViewer.present')}</span>
+                </button>
               ) : null}
             </div>
           ) : null}
-          {versioningAvailable && (rawCanShare || rawCanDownload) ? (
-            <button
-              type="button"
-              data-od-version-entry="true"
-              className={`chrome-action chrome-action-secondary chrome-action-icon od-tooltip${versionModalOpen ? ' is-active' : ''}`}
-              // Same disabled contract as the Share button directly below:
-              // `viewerOnly` + `viewerOnlyDisabledTitle`. A readonly shared
-              // project has no history to show a member in the first place —
-              // `.file-versions` is excluded from member mirrors, so the
-              // owner's real history never arrives — so an openable entry only
-              // ever led to an empty panel. This supersedes recvq56vFjQKfT,
-              // which had un-gated the entry on the reasoning that browsing
-              // history is a read action.
-              disabled={source === null || viewerOnly}
-              aria-label={t('fileViewer.versions.entry')}
-              aria-expanded={Boolean(versionModalOpen)}
-              data-tooltip={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.versions.entryFull')}
-              data-tooltip-placement="bottom"
-              title={viewerOnly ? viewerOnlyDisabledTitle : t('fileViewer.versions.entryFull')}
-              onClick={() => {
-                // The version history is a floating panel now, not a modal, so
-                // the toolbar icon is a toggle: a second click dismisses it.
-                if (versionModalOpen) {
-                  setVersionModalOpen(false);
-                  return;
-                }
-                fireArtifactToolbarClick('versions', 'toolbar');
-                setVersionModalOpen('toolbar');
-              }}
-            >
-              <RemixIcon name="history-line" size={15} />
-            </button>
-          ) : null}
-            <div className="chrome-file-action-menus">
-              {/* Outside-click dismissal is scoped to the Share/Export pair —
-                  the handoff split button next door must count as "outside" so
-                  opening it closes this popover (and vice versa via the
-                  handoff button's own dismiss listener). */}
-              <div className="share-menu chrome-share-menu chrome-share-menu--unified" ref={shareRef}>
-                {/* Share and Export are separate header intents again (the
-                    0.18.0 unified tabs buried Export one level deep and export
-                    reach halved); they still share one popover shell so
-                    switching between them keeps the menu anchored in place.
-                    Export keeps the leading slot; Owner C0 gives Share the
-                    dark primary treatment and Export the quiet secondary one. */}
-                {rawCanDownload ? (
-                  <button
-                    type="button"
-                    className={
-                      `chrome-action chrome-action-secondary chrome-action-with-label chrome-action-text-only chrome-action-unified ${shareEntryStyles.toolbarSecondary}` +
-                      (exportReadyNudge ? ' export-ready-nudge' : '')
-                    }
-                    aria-haspopup="menu"
-                    aria-expanded={deployMenuOpen && unifiedActionTab === 'export'}
-                    aria-label={t('fileViewer.unifiedExportTab')}
-                    disabled={viewerOnly}
-                    title={viewerOnly ? viewerOnlyDisabledTitle : undefined}
-                    onClick={openDownloadMenu}
-                  >
-                    <RemixIcon name="download-line" size={15} />
-                    <span>{t('fileViewer.unifiedExportTab')}</span>
-                  </button>
-                ) : null}
-                  <button
-                    type="button"
-                    className={`chrome-action chrome-action-secondary chrome-action-with-label chrome-action-text-only chrome-action-unified ${shareEntryStyles.toolbar}`}
-                    aria-haspopup="menu"
-                    aria-expanded={deployMenuOpen && unifiedActionTab === 'share'}
-                    data-artifact-anchor={toolbarMenuAnchorId}
-                    aria-label={shareMenuLabel}
-                    disabled={viewerOnly || !rawCanShare}
-                    title={viewerOnly ? viewerOnlyDisabledTitle : !rawCanShare || streaming ? shareUnavailableHint : undefined}
-                    onClick={openShareMenu}
-                  >
-                    {/* Owner C0: share the artifact card's forward-arrow glyph. */}
-                    <RemixIcon name="share-forward-line" size={15} />
-                    <span>{shareMenuLabel}</span>
-                  </button>
-                  <button
-                    type="button"
-                    className={`chrome-action chrome-action-secondary chrome-action-with-label chrome-action-text-only chrome-action-unified ${shareEntryStyles.toolbar}`}
-                    title="Đẩy lên GitHub"
-                    aria-label="Đẩy lên GitHub"
-                    onClick={async () => {
-                      let text = '';
-                      try {
-                        text = (await fetchProjectFileText(projectId, file.name, { workspaceContext: stableWorkspaceContextRef.current.value })) ?? '';
-                      } catch {}
-                      setGithubPushContent(text || liveHtml || '');
-                      setGithubPushOpen(true);
-                    }}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      color: 'var(--lg-primary, #2878E8)',
-                      fontWeight: 600,
-                    }}
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-                      <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
-                    </svg>
-                    <span>Đẩy GitHub</span>
-                  </button>
-                  {afterExportGuide.noticeId !== null ? (
-                    <AfterExportShareGuide
-                      key={afterExportGuide.noticeId}
-                      labels={{
-                        title: t('fileViewer.shareGuide.title'),
-                        description: t('fileViewer.shareGuide.description'),
-                        openShare: t('fileViewer.shareGuide.tryShare'),
-                        neverShow: t('fileViewer.shareGuide.neverShowAgain'),
-                        close: t('fileViewer.shareGuide.close'),
-                        saveFailed: t('fileViewer.shareGuide.preferenceSaveFailed'),
-                      }}
-                      onObserve={event => observeAnalytics(() => {
-                        const identity = {
-                          page_name: 'artifact' as const,
-                          area: 'share_guide' as const,
-                          project_id: projectId,
-                          project_kind: projectKind,
-                          artifact_id: anonymizeArtifactId({ projectId, fileName: file.name }),
-                        };
-                        if (event === 'view') trackShareGuideSurfaceView(analytics.track, identity);
-                        else trackShareGuideClick(analytics.track, { ...identity, element: event });
-                      })}
-                      onDismiss={afterExportGuide.dismiss}
-                      onNeverShow={afterExportGuide.neverShow}
-                      onOpenShare={() => {
-                        setMenuAnchorId(null);
-                        setMenuOrigin('toolbar');
-                        setUnifiedActionTab('share');
-                        setDeployMenuOpen(true);
-                      }}
-                    />
-                  ) : null}
-                {deployMenuOpen && (rawCanShare || rawCanDownload) ? (
+
+          <div ref={handoffButtonWrapRef} style={{ display: 'none' }}>
+            {viewerOnly || !(rawCanShare || rawCanDownload) ? null : (
+              <HandoffButton
+                projectId={projectId}
+                projectKind={projectKind}
+                projectName={projectName}
+                projectDir={projectDir}
+                agents={agents}
+                artifactId={artifactId}
+                artifactKind={handoffArtifactKind}
+                metricsConsent={metricsConsent}
+                installationId={installationId}
+              />
+            )}
+          </div>
+          <div className="share-menu chrome-share-menu chrome-share-menu--unified" ref={shareRef} style={{ display: 'contents' }}>
+            {afterExportGuide.noticeId !== null ? (
+              <AfterExportShareGuide
+                key={afterExportGuide.noticeId}
+                labels={{
+                  title: t('fileViewer.shareGuide.title'),
+                  description: t('fileViewer.shareGuide.description'),
+                  openShare: t('fileViewer.shareGuide.tryShare'),
+                  neverShow: t('fileViewer.shareGuide.neverShowAgain'),
+                  close: t('fileViewer.shareGuide.close'),
+                  saveFailed: t('fileViewer.shareGuide.preferenceSaveFailed'),
+                }}
+                onObserve={event => observeAnalytics(() => {
+                  const identity = {
+                    page_name: 'artifact' as const,
+                    area: 'share_guide' as const,
+                    project_id: projectId,
+                    project_kind: projectKind,
+                    artifact_id: anonymizeArtifactId({ projectId, fileName: file.name }),
+                  };
+                  if (event === 'view') trackShareGuideSurfaceView(analytics.track, identity);
+                  else trackShareGuideClick(analytics.track, { ...identity, element: event });
+                })}
+                onDismiss={afterExportGuide.dismiss}
+                onNeverShow={afterExportGuide.neverShow}
+                onOpenShare={() => {
+                  setMenuAnchorId(null);
+                  setMenuOrigin('toolbar');
+                  setUnifiedActionTab('share');
+                  setDeployMenuOpen(true);
+                }}
+              />
+            ) : null}
+            {deployMenuOpen && (rawCanShare || rawCanDownload) ? (
                   /*
                     * **同一块菜单,只是可能换个地方开。**
                     *
@@ -18118,21 +18168,8 @@ function HtmlViewer({
                   </AnchoredMenuShell>
                 ) : null}
               </div>
-              {viewerOnly || !(rawCanShare || rawCanDownload) ? null : (
-                <HandoffButton
-                  projectId={projectId}
-                  projectKind={projectKind}
-                  projectName={projectName}
-                  projectDir={projectDir}
-                  agents={agents}
-                  artifactId={artifactId}
-                  artifactKind={handoffArtifactKind}
-                  metricsConsent={metricsConsent}
-                  installationId={installationId}
-                />
-              )}
-            </div>
-      </>)}
+          </div>
+      )}
       <div className="viewer-body" ref={previewBodyRef}>
         {initialPreviewLoading ? (
           <FileViewerLoadingSkeleton />

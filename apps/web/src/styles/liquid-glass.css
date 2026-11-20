@@ -1015,4 +1015,98 @@ main,
   display: none !important;
 }
 
+/* 12. Collapse action items and icons into 3-line hamburger menu */
+.viewer-toolbar-inline-actions {
+  display: none !important;
+}
+
+.viewer-toolbar-more {
+  display: inline-flex !important;
+}
+
+.workspace-hamburger-menu-wrap {
+  position: relative !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+.workspace-dropdown-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--lg-text, #24334D) !important;
+  font-family: var(--font-play) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+  white-space: nowrap !important;
+}
+
+.workspace-dropdown-item svg {
+  flex-shrink: 0 !important;
+  color: var(--lg-primary, #2878E8) !important;
+}
+
+.workspace-dropdown-item:hover:not(:disabled) {
+  background: rgba(40, 120, 232, 0.12) !important;
+  color: var(--lg-primary, #2878E8) !important;
+}
+
+.workspace-dropdown-item:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+}
+
+[data-theme="dark"] .workspace-dropdown-item {
+  color: var(--lg-text, #F1F6FF) !important;
+}
+
+[data-theme="dark"] .workspace-dropdown-item svg {
+  color: var(--lg-primary, #78B8FF) !important;
+}
+
+[data-theme="dark"] .workspace-dropdown-item:hover:not(:disabled) {
+  background: rgba(120, 184, 255, 0.16) !important;
+  color: var(--lg-primary, #78B8FF) !important;
+}
+
+/* --- 10. POLISH & VISUAL REFINEMENTS ------------------------- */
+
+/* Remove focus outline on main containers */
+main:focus,
+.entry-main:focus,
+[tabindex="-1"]:focus {
+  outline: none !important;
+}
+
+/* Design Systems active tab label contrast */
+.ds-source-tab.active,
+.ds-presets-tab.active,
+button[role="tab"][aria-selected="true"] {
+  color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .ds-source-tab.active,
+[data-theme="dark"] .ds-presets-tab.active,
+[data-theme="dark"] button[role="tab"][aria-selected="true"] {
+  color: #FFFFFF !important;
+  background: var(--lg-primary, #2878E8) !important;
+}
+
+/* Drafts & Projects filter wrap and responsiveness */
+.drafts-view__filters,
+.projects-filter-bar,
+.all-projects-controls,
+.entry-home-layout__projects-header {
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
 
